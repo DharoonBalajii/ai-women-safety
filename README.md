@@ -1,13 +1,16 @@
 <div align="center">
 
-# 🚨 SARVAM SHIELD
+# <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Police%20Car%20Light.png" alt="Siren" width="38" height="38" /> RAKSHA THUNAI
 ### Next-Gen AI Women’s Safety & Real-Time Emergency Response System
+**Built with ❤️ for rapid emergency response by Team Cruise CTRL**
+
 > *“One trigger. One voice. One intelligent, life-saving response.”*
 
 <br/>
 
 [![Status: Active Emergency Grid](https://img.shields.io/badge/EMERGENCY_GRID-LIVE_ACTIVE-dc2626?style=for-the-badge&logo=shield&logoColor=white)](https://github.com)
-[![Sarvam AI: 21 Indic Languages](https://img.shields.io/badge/SARVAM_AI-21_INDIC_LANGUAGES-6366f1?style=for-the-badge&logo=openai&logoColor=white)](https://sarvam.ai)
+[![Sarvam AI: 23 Indic Languages](https://img.shields.io/badge/SARVAM_AI-23_INDIC_LANGUAGES_%2B_CODE_SWITCH-6366f1?style=for-the-badge&logo=openai&logoColor=white)](https://sarvam.ai)
+[![Team: Cruise CTRL](https://img.shields.io/badge/TEAM-CRUISE_CTRL-0ea5e9?style=for-the-badge&logo=github&logoColor=white)](https://github.com)
 [![Flutter: Android & iOS](https://img.shields.io/badge/MOBILE-FLUTTER_3.x-02569B?style=for-the-badge&logo=flutter&logoColor=white)](https://flutter.dev)
 [![Supabase: Realtime Sync](https://img.shields.io/badge/DATABASE-SUPABASE_REALTIME-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
 [![Clerk: Identity & Auth](https://img.shields.io/badge/SECURITY-CLERK_AUTH-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)](https://clerk.com)
@@ -15,11 +18,11 @@
 
 <br/>
 
-**[📱 Mobile App (Flutter)](#-mobile-application)** •
-**[🧠 AI Intelligence Layer](#-powered-by-sarvam-ai)** •
-**[🚔 Responder Dashboard](#-emergency-responder-network)** •
-**[🏗️ Architecture](#-system-architecture)** •
-**[🚀 Quickstart](#-getting-started)**
+**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Mobile%20Phone.png" width="18" height="18" /> Mobile App](#-mobile-application)** •
+**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Brain.png" width="18" height="18" /> Sarvam AI Engine](#-powered-by-sarvam-ai--real-time-code-switching)** •
+**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" width="18" height="18" /> Responder CAD](#-emergency-responder-network)** •
+**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png" width="18" height="18" /> Architecture](#-system-architecture)** •
+**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" width="18" height="18" /> Quickstart](#-getting-started)**
 
 ---
 
@@ -27,37 +30,41 @@
 
 <br/>
 
-## 🌟 Executive Overview
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" width="26" height="26" /> Hackathon Pitch: The Problem & The Breakthrough
 
-During an imminent threat, **every millisecond counts**. Traditional emergency systems require victims to unlock their smartphone, search for an app, type a distress SMS, and verbally explain their coordinates—steps that are virtually impossible under duress, physical confrontation, or unlawful restraint.
-
-**SARVAM SHIELD** fundamentally transforms this paradigm. Powered by **Sarvam AI**, it allows individuals in distress to trigger an emergency through hardware gestures or 1-tap widgets, speak naturally in their native language (*Hindi, Tamil, Urdu, Bengali, Telugu, Kannada, etc.*), and let on-device and cloud NLP **extract threat type, severity, location, and distress sentiment automatically**.
+| ❌ The Status Quo | ✅ The Raksha Thunai Solution |
+| :--- | :--- |
+| **Requires 5+ Manual Steps**: Unlock phone, open app, type message, pick contacts, explain live location under physical duress. | **Zero-Friction Trigger**: Triple-press power button or one-tap lockscreen widget initiates silent ambient capture. |
+| **Monolingual Rigid Systems**: Victims speaking colloquial, panicked, or mixed dialects get ignored by standard voice models. | **23 Indic Languages + Code-Switching**: Speaks English + Hindi, Tamil + Hindi, Tanglish, or Hinglish seamlessly. |
+| **Delayed Dispatch Pipeline**: Distress calls take minutes to categorize and route to first responders. | **Sub-Second Forensic AI Triangulation**: Live threat scoring (0-100), automated CAD dispatch & emergency SMS blast. |
 
 ```
-    ⚡ ONE-TAP / HARDWARE TRIGGER
-                 ↓
-    🎙️ AMBIENT AUDIO + 📍 LIVE GPS TELEMETRY
-                 ↓
+    ⚡ ZERO-FRICTION TRIGGER (Hardware Gesture / 1-Tap Widget)
+                            ↓
+    🎙️ AMBIENT AUDIO CAPTURE + 📍 HIGH-PRECISION GPS TELEMETRY
+                            ↓
     🧠 SARVAM AI ACOUSTIC NLP ENGINE
-    ├── 21 Indian Languages & Transliterations (Hinglish/Tanglish)
-    ├── Typo-Tolerant Damerau-Levenshtein Matching
-    └── Cross-Semantic Matrices (Confinement & Active Pursuit)
-                 ↓
-    🚨 REAL-TIME INCIDENT TRIANGULATION
-         ↙️                           ↘️
-👥 TRUSTED CONTACTS             🚔 EMERGENCY RESPONDER NETWORK
-├── Encrypted GPS Coordinates    ├── Live Proximity Heatmap
-├── Automated SMS via MSG91      ├── Triage Prioritization (Critical/High)
-└── Incident Audio Transcript    └── First-Responder GPS Dispatch
+    ├── 23 Indic Languages + Full Code-Switching (Hindi + English, Tamil + Hindi, etc.)
+    ├── Typo-Tolerant Damerau-Levenshtein Distress Lexicons
+    └── Cross-Semantic Threat Matrix (Confinement vs. Active Pursuit)
+                            ↓
+    🚨 INSTANT DUAL-CHANNEL DISPATCH
+         ↙️                                      ↘️
+👥 TRUSTED CONTACT CIRCLE                  🚔 RESPONDER CAD NETWORK
+├── Encrypted Live GPS Tracking URL        ├── Real-Time Spatial Heatmap & Priority Triage
+├── Immediate SMS Alert via MSG91          ├── Automated First-Responder Routing (PostGIS)
+└── AI Forensic Threat Summary             └── Live Audio Waveform & Forensic Transcript
 ```
 
 ---
 
-## 🧠 Powered by Sarvam AI: The Core Intelligence Engine
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Brain.png" width="26" height="26" /> Powered by Sarvam AI & Real-Time Code-Switching
 
-**Sarvam AI acts as the sensory brain of our platform.** It converts real-time acoustic speech into structured, actionable threat intelligence:
+In high-stress situations, **victims never speak in textbook sentences**. They panic, scream, whisper, and naturally mix multiple languages (*code-switching*). 
 
-### Real-Time Inference Showcase
+**Raksha Thunai** leverages **Sarvam AI's Saarika v2 speech-to-text models and acoustic NLP** to understand dialectal code-switches like **English + Hindi (Hinglish)**, **Tamil + Hindi**, **Tamil + English (Tanglish)**, and **23 official Indian languages** with acoustic distress sentiment extraction.
+
+### Multi-Language & Code-Switching Live Inference Showcase
 
 <table>
 <tr>
@@ -69,8 +76,8 @@ During an imminent threat, **every millisecond counts**. Traditional emergency s
 <tr>
 <td>
 
-**English:**  
-> *"Someone is chasing me down the alley! Please help!"*
+**Code-Switch: English + Hindi (Hinglish)**  
+> *"Someone is following me, mujhe bahut dar lag raha hai! Please help!"*
 
 </td>
 <td align="center">⚡</td>
@@ -79,11 +86,12 @@ During an imminent threat, **every millisecond counts**. Traditional emergency s
 ```json
 {
   "threatLevel": "CRITICAL",
-  "score": 98,
-  "category": "Extreme Distress / Pursuit Stalking",
-  "speakerType": "Victim in Imminent Danger",
-  "sentiment": "PANIC / ACUTE DANGER",
-  "flaggedTokens": ["chasing me", "help"]
+  "score": 99,
+  "category": "Active Pursuit & Stalking",
+  "languageMode": "Code-Switch (English + Hindi)",
+  "sentiment": "ACUTE_PANIC_AND_DANGER",
+  "flaggedTokens": ["following me", "mujhe bahut dar lag raha hai", "help"],
+  "dispatchProtocol": "AUTO_PRIORITY_1_DISPATCH"
 }
 ```
 
@@ -93,8 +101,8 @@ During an imminent threat, **every millisecond counts**. Traditional emergency s
 <tr>
 <td>
 
-**Urdu (اردو):**  
-> *"کوئی میرا پیچھا کر رہا ہے، بچاؤ!"*
+**Code-Switch: Tamil + Hindi**  
+> *"என்னை காப்பாத்துங்க, koi yahan mere room ka door break kar raha hai!"*
 
 </td>
 <td align="center">⚡</td>
@@ -104,9 +112,9 @@ During an imminent threat, **every millisecond counts**. Traditional emergency s
 {
   "threatLevel": "CRITICAL",
   "score": 98,
-  "category": "Extreme Distress / Pursuit Stalking",
-  "detectedLanguage": "Urdu (اردو)",
-  "flaggedTokens": ["پیچھا (chasing)", "کوئی (someone)"],
+  "category": "Violent Intrusion / Physical Threat",
+  "languageMode": "Code-Switch (Tamil + Hindi)",
+  "flaggedTokens": ["காப்பாத்துங்க (save me)", "door break", "room"],
   "dispatchProtocol": "AUTO_SILENT_SOS_TRIGGERED"
 }
 ```
@@ -129,8 +137,9 @@ During an imminent threat, **every millisecond counts**. Traditional emergency s
   "threatLevel": "CRITICAL",
   "score": 98,
   "category": "Forcible Confinement / Unlawful Entrapment",
-  "detectedLanguage": "Tamil (தமிழ்)",
-  "flaggedTokens": ["பூட்டப்பட்டிருக்கிறேன் (locked)", "அறையில் (room)"]
+  "languageMode": "Tamil (தமிழ்)",
+  "flaggedTokens": ["பூட்டப்பட்டிருக்கிறேன் (locked)", "அறையில் (room)"],
+  "dispatchProtocol": "AUTO_SILENT_SOS_TRIGGERED"
 }
 ```
 
@@ -152,8 +161,32 @@ During an imminent threat, **every millisecond counts**. Traditional emergency s
   "threatLevel": "CRITICAL",
   "score": 98,
   "category": "Forcible Confinement / Unlawful Entrapment",
-  "detectedLanguage": "Bengali (বাংলা)",
+  "languageMode": "Bengali (বাংলা)",
   "flaggedTokens": ["ঘরে (room)", "আটকে (confined)", "বাঁচাও (save)"]
+}
+```
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+**Urdu (اردو):**  
+> *"کوئی میرا پیچھا کر رہا ہے، بچاؤ!"*
+
+</td>
+<td align="center">⚡</td>
+<td>
+
+```json
+{
+  "threatLevel": "CRITICAL",
+  "score": 98,
+  "category": "Extreme Distress / Pursuit Stalking",
+  "languageMode": "Urdu (اردو)",
+  "flaggedTokens": ["پیچھا (chasing)", "کوئی (someone)"],
+  "dispatchProtocol": "AUTO_SILENT_SOS_TRIGGERED"
 }
 ```
 
@@ -163,83 +196,71 @@ During an imminent threat, **every millisecond counts**. Traditional emergency s
 
 ---
 
-## 🚀 Key Feature Matrix
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/High%20Voltage.png" width="26" height="26" /> Key Feature Matrix
 
 | Feature | Description | Status |
 | :--- | :--- | :---: |
-| ⚡ **One-Tap / Hardware SOS** | Trigger silent alerts via lock-button triple tap, volume gestures, or lockscreen widget. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
-| 🗣️ **21-Language Acoustic NLP** | Native support for Hindi, Tamil, Telugu, Kannada, Bengali, Urdu, Punjabi, Odia, Malayalam, Marathi, Gujarati, etc. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
-| 🛡️ **Cross-Semantic Matrix** | Dual-tier spatial-restraint correlation detecting confinement & pursuit even across dialectal variations. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
-| 📍 **Live GPS & Drift Tracking** | Continuous sub-5m GPS triangulation with real-time speed, heading, and dead-reckoning support. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
-| 🚔 **Responder CAD Grid** | Centralized web dashboard for police & rapid-response units with incident triage & auto-routing. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
-| 👥 **SMS Dual-Channel Blast** | Instant SMS alerts via **MSG91** with one-click live tracking URLs to emergency contacts. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
-| ⏱️ **Active Safety Check-In** | Countdown timer for night transit; automated escalation to CRITICAL if check-in is missed. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
-| 🔒 **Tamper-Proof Cloud Store** | End-to-end encrypted audio logs and incident timestamps recorded on Supabase. | ![Live](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| ⚡ **One-Tap / Hardware SOS** | Trigger silent alerts via lock-button triple tap, volume gestures, or lockscreen widget. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| 🗣️ **23 Indic Languages** | Native transcription & intent extraction across 23 Indian languages + dialectal transliterations. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| 🔄 **Code-Switching Support** | Seamless real-time understanding of mixed speech: English+Hindi, Tamil+Hindi, Tanglish & Hinglish. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| 🛡️ **Cross-Semantic Matrix** | Dual-tier spatial-restraint correlation detecting confinement & pursuit even across dialect variations. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| 📍 **Live GPS & Drift Tracking** | Continuous sub-5m GPS telemetry with real-time speed, heading, and dead-reckoning support. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| 🚔 **Responder CAD Grid** | High-contrast situational awareness dashboard for police & rapid-response patrol teams. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| 👥 **MSG91 Dual-Channel Blast** | Immediate SMS dispatch with one-click live tracking web links for family and trusted contacts. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| ⏱️ **Active Transit Check-In** | Automated countdown timer for late-night commutes; escalates to CRITICAL if check-in is missed. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
+| 🔒 **Tamper-Proof Audit Store** | Cryptographically signed telemetry and threat logs persisted on Supabase PostgreSQL. | ![Active](https://img.shields.io/badge/STATUS-ACTIVE-brightgreen?style=flat-square) |
 
 ---
 
-## 🏗️ System Architecture
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png" width="26" height="26" /> System Architecture
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer ["📱 Client Layer (Flutter Mobile App)"]
-        UI["Flutter UI (Android & iOS)"]
-        HW["Hardware Gesture Trigger"]
-        AUDIO["Audio Engine & MediaRecorder"]
-        GPS["Location Provider (GPS Telemetry)"]
+    classDef client fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
+    classDef ai fill:#31104b,stroke:#a855f7,stroke-width:2px,color:#f8fafc;
+    classDef backend fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc;
+    classDef dispatch fill:#450a0a,stroke:#f87171,stroke-width:2px,color:#f8fafc;
+
+    subgraph S1 ["1. Client & Sensor Ingestion (Flutter App)"]
+        A["🚨 Hardware Gesture / One-Tap Widget"] --> B["📱 Flutter Client Engine"]
+        B --> C["📍 High-Precision GPS Telemetry"]
+        B --> D["🎙️ Background Audio Streamer"]
+        B -.-> E["🔐 Clerk Auth & MSG91 2FA"]
     end
 
-    subgraph SecurityLayer ["🔐 Security & Identity"]
-        CLERK["Clerk Authentication"]
-        MSG["MSG91 OTP / 2FA Gate"]
+    subgraph S2 ["2. Sarvam AI Intelligence & Code-Switch Layer"]
+        D --> F["🧠 Sarvam AI Saarika v2 STT"]
+        F --> G["🔄 23 Languages & Code-Switch Engine\n(English+Hindi, Tamil+Hindi, Tanglish)"]
+        G --> H["🔍 Damerau-Levenshtein Fuzzy Lexicon"]
+        H --> I["🛡️ Cross-Language Threat Matrix\n(Confinement vs. Pursuit Scoring)"]
+        D -.->|Offline Fallback| J["⚡ On-Device Heuristic Engine"]
+        J --> I
     end
 
-    subgraph IntelligenceLayer ["🧠 AI Threat Intelligence Engine"]
-        SARVAM["Sarvam AI API (Saarika v2 STT)"]
-        HEURISTIC["Offline Heuristic Engine (Fallback)"]
-        FUZZY["Damerau-Levenshtein Typo Tolerance"]
-        MATRIX["Cross-Language Semantic Matrices"]
+    subgraph S3 ["3. Realtime Cloud Backend (Supabase)"]
+        C --> K["☁️ Supabase Realtime Incident Gateway"]
+        I -->|Threat Score >= 75| K
+        K --> L["🗺️ PostGIS Geofencing & Spatial Routing"]
+        K --> M["💾 Encrypted Incident Audio & Event Ledger"]
     end
 
-    subgraph BackendLayer ["☁️ Realtime Backend (Supabase)"]
-        AUTH_DB["User & Contact Store"]
-        INCIDENTS["Live Incidents Stream"]
-        GEO["PostGIS Proximity Query"]
+    subgraph S4 ["4. Emergency Dual-Channel Dispatch"]
+        L --> N["🚔 Responder CAD Web Dashboard (React + Vite)"]
+        M --> O["👥 Trusted Contacts Blast (MSG91 SMS + Live Map)"]
+        N --> P["🚨 Automated First-Responder Patrol Intercept"]
     end
 
-    subgraph ActionLayer ["🚨 Emergency Dispatch & Response"]
-        CONTACTS["Trusted Contacts (SMS / Push)"]
-        RESPONDERS["Authorized Responder Network"]
-        CAD["Web CAD Dashboard (React + Vite)"]
-    end
-
-    HW --> UI
-    UI --> AUDIO
-    UI --> GPS
-    UI <--> CLERK
-    CLERK <--> MSG
-
-    AUDIO --> SARVAM
-    AUDIO -.->|Network Drop| HEURISTIC
-    SARVAM --> FUZZY
-    HEURISTIC --> MATRIX
-    FUZZY --> MATRIX
-
-    MATRIX -->|Threat Classification >= 75| INCIDENTS
-    GPS --> INCIDENTS
-    INCIDENTS --> GEO
-    INCIDENTS --> AUTH_DB
-
-    AUTH_DB --> CONTACTS
-    GEO --> RESPONDERS
-    INCIDENTS --> CAD
+    class A,B,C,D,E client;
+    class F,G,H,I,J ai;
+    class K,L,M backend;
+    class N,O,P dispatch;
 ```
 
 ---
 
-## 📱 Mobile Application (Flutter)
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Mobile%20Phone.png" width="26" height="26" /> Mobile Application (Flutter)
 
-The mobile application is crafted with **Flutter** for instantaneous startup speed, native platform channel bindings, and background audio persistence:
+Crafted with **Flutter** for instant startup, native platform channel bindings, and background audio persistence:
 
 ```
 apps/mobile_app/
@@ -249,7 +270,7 @@ apps/mobile_app/
 │   │   ├── location/        # High-accuracy GPS telemetry & geofencing
 │   │   └── security/        # Clerk token cache & biometric checks
 │   ├── features/
-│   │   ├── sos/             # One-tap panic trigger & safety timer
+│   │   ├── sos/             # One-tap panic trigger & transit safety timer
 │   │   ├── incidents/       # Real-time incident timeline & updates
 │   │   └── contacts/        # Trusted contacts management
 │   └── main.dart
@@ -261,9 +282,9 @@ apps/mobile_app/
 
 ---
 
-## 🚔 Emergency Responder Web Dashboard
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" width="26" height="26" /> Emergency Responder Web Dashboard
 
-For dispatchers and patrol units, a dedicated high-contrast dashboard built with **React + Vite** provides situational awareness:
+For dispatchers and patrol units, a dedicated high-contrast dashboard built with **React + Vite** provides instant situational awareness:
 
 ```
 website demo/
@@ -275,32 +296,32 @@ website demo/
 │   │   ├── TranscriptFeed.jsx     # Multilingual live stream & SOS overrides
 │   │   └── IntelligenceReport.jsx # Forensic AI rationale breakdown
 │   ├── services/
-│   │   ├── sarvamService.js       # 21-Language NLP & Typo-Tolerant Engine
+│   │   ├── sarvamService.js       # 23-Language & Code-Switching Engine
 │   │   └── audioEngine.js         # Web Audio API visualizer & synth
 │   └── App.jsx
 ```
 
 ---
 
-## 🛠️ Technology Stack Breakdown
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wrench.png" width="26" height="26" /> Technology Stack Breakdown
 
 <div align="center">
 
 | Domain | Technology | Purpose |
 | :--- | :--- | :--- |
 | **Mobile Core** | ![Flutter](https://img.shields.io/badge/Flutter-02569B?logo=flutter&logoColor=white) | Cross-platform client for iOS & Android |
-| **AI Intelligence** | ![Sarvam AI](https://img.shields.io/badge/Sarvam_AI-6366f1?logo=openai&logoColor=white) | Indic STT, entity extraction, and sentiment |
+| **AI Intelligence** | ![Sarvam AI](https://img.shields.io/badge/Sarvam_AI-6366f1?logo=openai&logoColor=white) | Indic STT (23 Languages), Code-Switching & Acoustic Threat NLP |
 | **Auth & Identity** | ![Clerk](https://img.shields.io/badge/Clerk-6C47FF?logo=clerk&logoColor=white) | Secure user authentication and session management |
 | **Telephony / SMS** | ![MSG91](https://img.shields.io/badge/MSG91-FF5722?logo=twilio&logoColor=white) | Instant transactional emergency SMS & OTP |
-| **Database & Realtime** | ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white) | PostgreSQL, Realtime WebSocket sync & PostGIS |
+| **Database & Realtime** | ![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white) | PostgreSQL, Realtime WebSocket sync & PostGIS spatial queries |
 | **Responder Web** | ![React](https://img.shields.io/badge/React_18-61DAFB?logo=react&logoColor=black) ![Vite](https://img.shields.io/badge/Vite_8-646CFF?logo=vite&logoColor=white) | High-speed dispatcher CAD dashboard |
-| **Styling** | ![CSS3](https://img.shields.io/badge/Vanilla_CSS3-1572B6?logo=css3&logoColor=white) | Custom glassmorphism design system |
+| **Styling** | ![CSS3](https://img.shields.io/badge/Vanilla_CSS3-1572B6?logo=css3&logoColor=white) | High-contrast glassmorphic design system |
 
 </div>
 
 ---
 
-## 🚀 Getting Started
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" width="26" height="26" /> Getting Started
 
 ### Prerequisites
 - **Node.js**: v18.0 or higher
@@ -314,8 +335,8 @@ website demo/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/sarvam-shield.git
-cd "sarvam-shield/website demo"
+git clone https://github.com/Cruise-CTRL/raksha-thunai.git
+cd "raksha-thunai/website demo"
 
 # Install dependencies
 npm install
@@ -345,9 +366,9 @@ flutter run
 
 ---
 
-## 🧪 Comprehensive Multilingual Verification
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Test%20Tube.png" width="26" height="26" /> Comprehensive Multilingual Verification
 
-To ensure universal reliability across all 21 Indian languages, an automated regression test suite runs on every build:
+To ensure universal reliability across all 23 Indian languages and mixed code-switching scenarios, an automated regression test suite runs on every build:
 
 ```bash
 node test_all_languages.mjs
@@ -355,7 +376,7 @@ node test_all_languages.mjs
 
 ---
 
-## 🛡️ Privacy, Ethics & Security
+## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Locked.png" width="26" height="26" /> Privacy, Ethics & Security
 
 - **Zero Ambient Eavesdropping**: Continuous recording only activates when the SOS trigger is armed, or via periodic local acoustic sampling that never uploads unless distress is flagged.
 - **End-to-End Location Encryption**: Live coordinates are transmitted through encrypted WebSockets directly to authorized contacts and certified response nodes.
@@ -365,12 +386,7 @@ node test_all_languages.mjs
 
 <div align="center">
 
-### 🚨 Built for Safety. Powered by Sarvam AI.
-
-**[Report Incident / Demo](http://127.0.0.1:5173)** •
-**[Documentation](https://github.com)** •
-**[License: MIT](LICENSE)**
-
-*Made with ❤️ for Women's Safety & Rapid Emergency Response across India.*
+### <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Police%20Car%20Light.png" width="24" height="24" /> Raksha Thunai — Built for Safety by Team Cruise CTRL
+*Powered by Sarvam AI for Women's Safety & Rapid Emergency Response across India.*
 
 </div>
