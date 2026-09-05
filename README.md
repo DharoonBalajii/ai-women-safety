@@ -206,10 +206,10 @@ In high-stress situations, **victims never speak in textbook sentences**. They p
 
 ```mermaid
 flowchart TD
-    classDef client fill:#1e293b,stroke:#38bdf8,stroke-width:2px,color:#f8fafc;
-    classDef ai fill:#31104b,stroke:#a855f7,stroke-width:2px,color:#f8fafc;
-    classDef backend fill:#064e3b,stroke:#34d399,stroke-width:2px,color:#f8fafc;
-    classDef dispatch fill:#450a0a,stroke:#f87171,stroke-width:2px,color:#f8fafc;
+    classDef client fill:none,stroke:#38bdf8,stroke-width:1.5px;
+    classDef ai fill:none,stroke:#a855f7,stroke-width:1.5px;
+    classDef backend fill:none,stroke:#34d399,stroke-width:1.5px;
+    classDef dispatch fill:none,stroke:#f87171,stroke-width:1.5px;
 
     subgraph S1 ["1. Client & Sensor Ingestion (Flutter App)"]
         A["🚨 Hardware Gesture / One-Tap Widget"] --> B["📱 Flutter Client Engine"]
@@ -244,6 +244,11 @@ flowchart TD
     class F,G,H,I,J ai;
     class K,L,M backend;
     class N,O,P dispatch;
+
+    style S1 fill:none,stroke:#38bdf8,stroke-width:1.5px,stroke-dasharray: 4 4
+    style S2 fill:none,stroke:#a855f7,stroke-width:1.5px,stroke-dasharray: 4 4
+    style S3 fill:none,stroke:#34d399,stroke-width:1.5px,stroke-dasharray: 4 4
+    style S4 fill:none,stroke:#f87171,stroke-width:1.5px,stroke-dasharray: 4 4
 ```
 
 ---
