@@ -17,6 +17,7 @@ class IncidentTimeline extends StatelessWidget {
       case UpdateSource.textInput:
         return AppColors.beaconAmber;
       case UpdateSource.silentOption:
+      case UpdateSource.ambient:
         return AppColors.alarmRed;
       case UpdateSource.responder:
         return AppColors.signalTeal;

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../models/emergency_incident.dart';
 import '../models/safe_place.dart';
+import '../models/threat_level.dart';
 import '../models/threat_type.dart';
 import '../providers/contacts_provider.dart';
 import '../providers/emergency_provider.dart';
@@ -87,6 +88,8 @@ class _EmergencyActiveScreenState extends State<EmergencyActiveScreen> {
         children: [
           _StatusBanner(incident: incident),
           const SizedBox(height: 16),
+          _AmbientMonitorCard(emergency: emergency),
+          const SizedBox(height: 16),
           _MapCard(incident: incident),
           const SizedBox(height: 16),
           _ReportInputCard(emergency: emergency),
@@ -160,6 +163,78 @@ class _StatusBanner extends StatelessWidget {
                   Text('[SIMULATED] ${incident.responderStage.label}', style: AppText.mono(fontSize: 11)),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Runs for the life of the incident with no interaction required — the
+/// point is that a phone owner who can't safely touch their screen still
+/// gets covered. Shows what the AI last overheard only when there's
+/// something to say; otherwise a quiet "listening" state.
+class _AmbientMonitorCard extends StatelessWidget {
+  final EmergencyProvider emergency;
+  const _AmbientMonitorCard({required this.emergency});
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = emergency.isAmbientMonitoringEnabled;
+    final assessing = emergency.isAssessingAmbient;
+    final assessment = emergency.latestAmbientAssessment;
+    final level = assessment?.level ?? ThreatLevel.none;
+
+    final dotColor = enabled ? level.color : AppColors.paperMuted;
+    final statusLabel = !enabled
+        ? 'PAUSED'
+        : assessing
+            ? 'LISTENING…'
+            : level.label.toUpperCase();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                BeaconPulse(
+                  size: 28,
+                  color: dotColor,
+                  urgent: enabled && level == ThreatLevel.danger,
+                  child: const SizedBox.shrink(),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('AMBIENT THREAT MONITOR', style: AppText.textTheme.labelMedium),
+                      const SizedBox(height: 2),
+                      Text(
+                        statusLabel,
+                        style: AppText.textTheme.titleLarge?.copyWith(color: dotColor, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: enabled ? emergency.stopAmbientMonitoring : emergency.startAmbientMonitoring,
+                  child: Text(enabled ? 'PAUSE' : 'RESUME'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(
+              assessment != null && assessment.reason.isNotEmpty
+                  ? assessment.reason
+                  : enabled
+                      ? "Quietly listening for danger cues — no need to touch your phone."
+                      : 'Not listening. Resume to let the AI watch for danger automatically.',
+              style: AppText.textTheme.bodyMedium,
             ),
           ],
         ),
