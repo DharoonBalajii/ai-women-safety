@@ -42,7 +42,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('RAKSHA THONAI'),
+        title: const Text('RAKSHA THUNAI'),
         actions: [
           IconButton(
             icon: const Icon(Icons.history_rounded),

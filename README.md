@@ -1,4 +1,4 @@
-# Raksha Thonai
+# Raksha Thunai
 
 A hackathon prototype for a voice-powered emergency safety app. One trigger
 (a hold-to-arm beacon, or a silent quick-report tile) starts an emergency

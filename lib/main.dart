@@ -54,7 +54,7 @@ class _AiWomenSafetyAppState extends State<AiWomenSafetyApp> {
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,
-        title: 'Raksha Thonai',
+        title: 'Raksha Thunai',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
         home: const HomeScreen(),
