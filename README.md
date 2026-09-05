@@ -126,27 +126,6 @@ The application is designed for a fast, minimal emergency experience with platfo
 
 ---
 
-# ✨ Interactive UI & Experience
-
-The application is designed to feel like a real emergency-response product, not just a static prototype.
-
-### Interactive elements include:
-
-* 🚨 Animated live siren/SOS indicator
-* ❤️ Pulsing emergency status
-* 📍 Animated live location tracking
-* 🔴 Real-time emergency states
-* 🗺️ Interactive maps
-* 🔄 Animated incident timeline
-* 🚔 Live responder status
-* ⏱️ Emergency countdown timers
-* 🎙️ Voice processing animations
-* Smooth transitions and micro-interactions
-
-Every important emergency state is represented visually so the user can understand what is happening immediately.
-
----
-
 # 🛠️ Technology Stack
 
 ### 📱 Mobile
