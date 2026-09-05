@@ -1,6 +1,6 @@
 <div align="center">
 
-# <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Police%20Car%20Light.png" alt="Siren" width="38" height="38" /> RAKSHA THUNAI
+# 🚨 RAKSHA THUNAI
 ### Next-Gen AI Women’s Safety & Real-Time Emergency Response System
 **Built with ❤️ for rapid emergency response by Team Cruise CTRL**
 
@@ -18,11 +18,11 @@
 
 <br/>
 
-**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Mobile%20Phone.png" width="18" height="18" /> Mobile App](#-mobile-application)** •
-**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Brain.png" width="18" height="18" /> Sarvam AI Engine](#-powered-by-sarvam-ai--real-time-code-switching)** •
-**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" width="18" height="18" /> Responder CAD](#-emergency-responder-network)** •
-**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png" width="18" height="18" /> Architecture](#-system-architecture)** •
-**[<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" width="18" height="18" /> Quickstart](#-getting-started)**
+**[📱 Mobile App](#-mobile-application-flutter)** •
+**[🧠 Sarvam AI Engine](#-powered-by-sarvam-ai--real-time-code-switching)** •
+**[🚔 Responder CAD](#-emergency-responder-web-cad-dashboard)** •
+**[🏗️ Architecture](#️-system-architecture)** •
+**[🚀 Quickstart](#-getting-started)**
 
 ---
 
@@ -30,35 +30,25 @@
 
 <br/>
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" width="26" height="26" /> Hackathon Pitch: The Problem & The Breakthrough
+## 🌟 Executive Summary & Technical Innovation
 
-| ❌ The Status Quo | ✅ The Raksha Thunai Solution |
-| :--- | :--- |
-| **Requires 5+ Manual Steps**: Unlock phone, open app, type message, pick contacts, explain live location under physical duress. | **Zero-Friction Trigger**: Triple-press power button or one-tap lockscreen widget initiates silent ambient capture. |
-| **Monolingual Rigid Systems**: Victims speaking colloquial, panicked, or mixed dialects get ignored by standard voice models. | **23 Indic Languages + Code-Switching**: Speaks English + Hindi, Tamil + Hindi, Tanglish, or Hinglish seamlessly. |
-| **Delayed Dispatch Pipeline**: Distress calls take minutes to categorize and route to first responders. | **Sub-Second Forensic AI Triangulation**: Live threat scoring (0-100), automated CAD dispatch & emergency SMS blast. |
+In acute emergency scenarios involving physical restraint, stalking, or imminent threat, **seconds dictate survival**. Conventional emergency frameworks depend on multi-step manual interactions—unlocking handsets, launching standalone apps, typing distress texts, and articulating coordinates—an assumption that fails during active duress or acute panic.
 
-```
-    ⚡ ZERO-FRICTION TRIGGER (Hardware Gesture / 1-Tap Widget)
-                            ↓
-    🎙️ AMBIENT AUDIO CAPTURE + 📍 HIGH-PRECISION GPS TELEMETRY
-                            ↓
-    🧠 SARVAM AI ACOUSTIC NLP ENGINE
-    ├── 23 Indic Languages + Full Code-Switching (Hindi + English, Tamil + Hindi, etc.)
-    ├── Typo-Tolerant Damerau-Levenshtein Distress Lexicons
-    └── Cross-Semantic Threat Matrix (Confinement vs. Active Pursuit)
-                            ↓
-    🚨 INSTANT DUAL-CHANNEL DISPATCH
-         ↙️                                      ↘️
-👥 TRUSTED CONTACT CIRCLE                  🚔 RESPONDER CAD NETWORK
-├── Encrypted Live GPS Tracking URL        ├── Real-Time Spatial Heatmap & Priority Triage
-├── Immediate SMS Alert via MSG91          ├── Automated First-Responder Routing (PostGIS)
-└── AI Forensic Threat Summary             └── Live Audio Waveform & Forensic Transcript
-```
+**Raksha Thunai** eliminates this critical latency through an autonomous, voice-activated emergency response grid powered by **Sarvam AI**. By pairing zero-touch hardware gestures with Indic speech-to-intent intelligence, the system converts raw ambient acoustics into real-time threat scores, forensic transcripts, and automated law-enforcement dispatch.
+
+### ⚖️ Architectural Paradigm Shift
+
+| Evaluation Dimension | Conventional Emergency Solutions | Raksha Thunai Autonomous AI Grid |
+| :--- | :--- | :--- |
+| **Trigger Accessibility** | Multi-touch UI navigation requiring full visual attention and unlocked screens | **Zero-Friction Gesture**: Silent triple-press power button or one-tap lockscreen widget |
+| **Linguistic Processing** | Rigid monolingual ASR; fails on panic inflections, shouting, or code-mixing | **23 Indic Languages + Code-Switching**: Real-time parsing of Hinglish, Tamil+Hindi, and Tanglish |
+| **Distress Intelligence** | None; dumb audio recordings without automated threat extraction | **Sarvam AI Acoustic NLP**: Sub-second threat scoring (0–100), intent extraction & sentiment analysis |
+| **Triage & Dispatch** | Sequential manual phone calls resulting in 3–5 minute triage bottlenecks | **Sub-Second Concurrent Broadcast**: Automated CAD dispatch + encrypted SMS tracking via MSG91 |
+| **Network Resilience** | Total failure upon cellular data disconnection | **Hybrid Fail-Safe**: On-device heuristic classifier with SMS bearer fallback |
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Brain.png" width="26" height="26" /> Powered by Sarvam AI & Real-Time Code-Switching
+## 🧠 Powered by Sarvam AI & Real-Time Code-Switching
 
 In high-stress situations, **victims never speak in textbook sentences**. They panic, scream, whisper, and naturally mix multiple languages (*code-switching*). 
 
@@ -196,7 +186,7 @@ In high-stress situations, **victims never speak in textbook sentences**. They p
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/High%20Voltage.png" width="26" height="26" /> Key Feature Matrix
+## ⚡ Key Capabilities & Feature Matrix
 
 | Feature | Description | Status |
 | :--- | :--- | :---: |
@@ -212,7 +202,7 @@ In high-stress situations, **victims never speak in textbook sentences**. They p
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gear.png" width="26" height="26" /> System Architecture
+## 🏗️ System Architecture
 
 ```mermaid
 flowchart TD
@@ -258,7 +248,7 @@ flowchart TD
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Mobile%20Phone.png" width="26" height="26" /> Mobile Application (Flutter)
+## 📱 Mobile Application (Flutter)
 
 Crafted with **Flutter** for instant startup, native platform channel bindings, and background audio persistence:
 
@@ -282,7 +272,7 @@ apps/mobile_app/
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" width="26" height="26" /> Emergency Responder Web Dashboard
+## 🚔 Emergency Responder Web CAD Dashboard
 
 For dispatchers and patrol units, a dedicated high-contrast dashboard built with **React + Vite** provides instant situational awareness:
 
@@ -303,7 +293,7 @@ website demo/
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Wrench.png" width="26" height="26" /> Technology Stack Breakdown
+## 🛠️ Technology Stack Breakdown
 
 <div align="center">
 
@@ -321,7 +311,7 @@ website demo/
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" width="26" height="26" /> Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - **Node.js**: v18.0 or higher
@@ -366,7 +356,7 @@ flutter run
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Test%20Tube.png" width="26" height="26" /> Comprehensive Multilingual Verification
+## 🧪 Comprehensive Multilingual Verification
 
 To ensure universal reliability across all 23 Indian languages and mixed code-switching scenarios, an automated regression test suite runs on every build:
 
@@ -376,7 +366,7 @@ node test_all_languages.mjs
 
 ---
 
-## <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Locked.png" width="26" height="26" /> Privacy, Ethics & Security
+## 🔒 Privacy, Ethics & Security
 
 - **Zero Ambient Eavesdropping**: Continuous recording only activates when the SOS trigger is armed, or via periodic local acoustic sampling that never uploads unless distress is flagged.
 - **End-to-End Location Encryption**: Live coordinates are transmitted through encrypted WebSockets directly to authorized contacts and certified response nodes.
@@ -386,7 +376,7 @@ node test_all_languages.mjs
 
 <div align="center">
 
-### <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Police%20Car%20Light.png" width="24" height="24" /> Raksha Thunai — Built for Safety by Team Cruise CTRL
+### 🚨 Raksha Thunai — Built for Safety by Team Cruise CTRL
 *Powered by Sarvam AI for Women's Safety & Rapid Emergency Response across India.*
 
 </div>
