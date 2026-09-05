@@ -5,7 +5,7 @@ import 'providers/contacts_provider.dart';
 import 'providers/emergency_provider.dart';
 import 'providers/settings_provider.dart';
 import 'screens/emergency_active_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_shell_screen.dart';
 import 'services/quick_action_service.dart';
 import 'theme/app_theme.dart';
 
@@ -57,7 +57,7 @@ class _AiWomenSafetyAppState extends State<AiWomenSafetyApp> {
         title: 'Raksha Thunai',
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(),
-        home: const HomeScreen(),
+        home: const MainShellScreen(),
       ),
     );
   }

@@ -19,6 +19,19 @@ class LocationService {
     }
   }
 
+  /// Cheap status check for display purposes — checks the OS service and
+  /// existing permission grant without prompting, unlike [ensurePermission].
+  Future<bool> isActive() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return false;
+      final permission = await Geolocator.checkPermission();
+      return permission == LocationPermission.always || permission == LocationPermission.whileInUse;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<LocationPoint?> getCurrentLocation() async {
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
