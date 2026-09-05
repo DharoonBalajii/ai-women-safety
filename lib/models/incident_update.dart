@@ -1,6 +1,6 @@
 import 'location_point.dart';
 
-enum UpdateSource { voice, silentOption, system, responder }
+enum UpdateSource { voice, textInput, silentOption, system, responder }
 
 class IncidentUpdate {
   final String id;

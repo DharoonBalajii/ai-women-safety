@@ -9,6 +9,7 @@ import '../models/location_point.dart';
 import '../models/safe_place.dart';
 import '../models/threat_type.dart';
 import '../models/trusted_contact.dart';
+import '../models/voice_analysis_result.dart';
 import '../services/alert_service.dart';
 import '../services/incident_store.dart';
 import '../services/location_service.dart';
@@ -33,6 +34,7 @@ class EmergencyProvider extends ChangeNotifier {
   List<SafePlace> _safePlaces = [];
   bool _isRecordingVoice = false;
   bool _isAnalyzingVoice = false;
+  bool _isAnalyzingText = false;
   List<EmergencyIncident> _history = [];
 
   StreamSubscription<LocationPoint>? _locationSub;
@@ -46,6 +48,7 @@ class EmergencyProvider extends ChangeNotifier {
   bool get safePlacesLookupFailed => _safePlacesLookupFailed;
   bool get isRecordingVoice => _isRecordingVoice;
   bool get isAnalyzingVoice => _isAnalyzingVoice;
+  bool get isAnalyzingText => _isAnalyzingText;
   List<EmergencyIncident> get history => List.unmodifiable(_history);
 
   Future<void> loadHistory() async {
@@ -162,21 +165,51 @@ class EmergencyProvider extends ChangeNotifier {
     final incident = _activeIncident ?? await _startIncident(type: ThreatType.unknown);
 
     final result = await sarvamService.analyzeVoiceClip(file);
+    _applyAnalysisResult(incident, result, source: UpdateSource.voice);
+
+    _isAnalyzingVoice = false;
+    await _persist();
+    notifyListeners();
+  }
+
+  /// Text-input counterpart to [stopVoiceRecordingAndAnalyze] — same Sarvam
+  /// threat-extraction pipeline, used when speaking aloud isn't safe or
+  /// possible. Either channel can start the incident if none is active yet.
+  Future<void> sendTextUpdate(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return;
+
+    _isAnalyzingText = true;
+    notifyListeners();
+
+    final apiKey = await _settingsService.getSarvamApiKey();
+    final sarvamService = SarvamAIService(apiKey: apiKey);
+    final incident = _activeIncident ?? await _startIncident(type: ThreatType.unknown);
+
+    final result = await sarvamService.analyzeTextMessage(trimmed);
+    _applyAnalysisResult(incident, result, source: UpdateSource.textInput);
+
+    _isAnalyzingText = false;
+    await _persist();
+    notifyListeners();
+  }
+
+  void _applyAnalysisResult(
+    EmergencyIncident incident,
+    VoiceAnalysisResult result, {
+    required UpdateSource source,
+  }) {
     incident.threatType = result.threatType;
     incident.aiSummary = result.summary;
     incident.updates.add(IncidentUpdate(
       id: _uuid.v4(),
       timestamp: DateTime.now(),
       text: result.summary,
-      source: UpdateSource.voice,
+      source: source,
       location: incident.latestLocation,
       rawTranscript: result.transcript,
       detectedLanguage: result.detectedLanguage,
     ));
-
-    _isAnalyzingVoice = false;
-    await _persist();
-    notifyListeners();
   }
 
   Future<void> addManualUpdate(String text) async {

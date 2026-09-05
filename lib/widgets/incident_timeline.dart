@@ -14,6 +14,7 @@ class IncidentTimeline extends StatelessWidget {
   Color _dotColor(UpdateSource source) {
     switch (source) {
       case UpdateSource.voice:
+      case UpdateSource.textInput:
         return AppColors.beaconAmber;
       case UpdateSource.silentOption:
         return AppColors.alarmRed;

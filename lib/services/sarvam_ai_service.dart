@@ -119,7 +119,38 @@ ONLY a compact JSON object, no prose, in this exact shape:
     );
   }
 
-  VoiceAnalysisResult _mockAnalysis({required String seed, String? transcript, String? language}) {
+  /// Text-input counterpart to [analyzeVoiceClip], for when speaking aloud
+  /// isn't safe or possible. Skips speech-to-text and sends the typed
+  /// message straight to Sarvam chat completion for threat extraction —
+  /// same mock-mode fallback, same structured result either way.
+  Future<VoiceAnalysisResult> analyzeTextMessage(String message) async {
+    final trimmed = message.trim();
+    if (trimmed.isEmpty) {
+      return _mockAnalysis(seed: DateTime.now().toIso8601String());
+    }
+    if (!isConfigured) {
+      return _mockAnalysis(seed: trimmed, transcript: trimmed, language: 'en-IN', sourceLabel: 'text input');
+    }
+
+    try {
+      final context = await _extractContext(trimmed);
+      return VoiceAnalysisResult(
+        transcript: trimmed,
+        detectedLanguage: null,
+        threatType: context.$1,
+        summary: context.$2,
+      );
+    } catch (_) {
+      return _mockAnalysis(seed: trimmed, transcript: trimmed, sourceLabel: 'text input');
+    }
+  }
+
+  VoiceAnalysisResult _mockAnalysis({
+    required String seed,
+    String? transcript,
+    String? language,
+    String sourceLabel = 'voice input',
+  }) {
     const sampleTranscripts = [
       'Someone has been following me since I left the station.',
       'A stranger is threatening me near the parking lot.',
@@ -149,7 +180,7 @@ ONLY a compact JSON object, no prose, in this exact shape:
       transcript: pickedTranscript,
       detectedLanguage: language ?? 'en-IN',
       threatType: type,
-      summary: '[Demo mode] ${type.label} detected from voice input.',
+      summary: '[Demo mode] ${type.label} detected from $sourceLabel.',
       wasMocked: true,
     );
   }

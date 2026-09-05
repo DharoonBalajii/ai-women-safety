@@ -89,7 +89,7 @@ class _EmergencyActiveScreenState extends State<EmergencyActiveScreen> {
           const SizedBox(height: 16),
           _MapCard(incident: incident),
           const SizedBox(height: 16),
-          _VoiceCaptureCard(emergency: emergency),
+          _ReportInputCard(emergency: emergency),
           const SizedBox(height: 16),
           _SafeZonesCard(
             places: emergency.safePlaces,
@@ -229,9 +229,123 @@ class _MapCard extends StatelessWidget {
   }
 }
 
-class _VoiceCaptureCard extends StatelessWidget {
+/// Two channels into the same Sarvam AI pipeline — speak or type, whichever
+/// is safe to do right now. Presented as equal tabs rather than a primary
+/// beacon with a text field bolted underneath, since typing is a real
+/// fallback (e.g. when staying silent matters) and not a lesser option.
+class _ReportInputCard extends StatefulWidget {
   final EmergencyProvider emergency;
-  const _VoiceCaptureCard({required this.emergency});
+  const _ReportInputCard({required this.emergency});
+
+  @override
+  State<_ReportInputCard> createState() => _ReportInputCardState();
+}
+
+class _ReportInputCardState extends State<_ReportInputCard> {
+  bool _textMode = false;
+  late final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _send() {
+    final text = _controller.text;
+    if (text.trim().isEmpty) return;
+    widget.emergency.sendTextUpdate(text);
+    _controller.clear();
+    FocusScope.of(context).unfocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final emergency = widget.emergency;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text('REPORT AN UPDATE', style: AppText.textTheme.labelMedium),
+                const Spacer(),
+                _ChannelToggle(
+                  textMode: _textMode,
+                  onChanged: (value) => setState(() => _textMode = value),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            if (_textMode) _TextChannel(emergency: emergency, controller: _controller, onSend: _send)
+            else _VoiceChannel(emergency: emergency),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChannelToggle extends StatelessWidget {
+  final bool textMode;
+  final ValueChanged<bool> onChanged;
+  const _ChannelToggle({required this.textMode, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.inkBase,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.hairline),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ChannelTab(label: 'VOICE', selected: !textMode, onTap: () => onChanged(false)),
+          _ChannelTab(label: 'TEXT', selected: textMode, onTap: () => onChanged(true)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChannelTab extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ChannelTab({required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.beaconAmber : Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Text(
+          label,
+          style: AppText.textTheme.labelSmall?.copyWith(
+            color: selected ? AppColors.inkBase : AppColors.paperMuted,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VoiceChannel extends StatelessWidget {
+  final EmergencyProvider emergency;
+  const _VoiceChannel({required this.emergency});
 
   @override
   Widget build(BuildContext context) {
@@ -241,31 +355,80 @@ class _VoiceCaptureCard extends StatelessWidget {
             ? 'Listening… release to send'
             : 'Hold to speak an update';
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            GestureDetector(
-              onLongPressStart: (_) => emergency.startVoiceRecording(),
-              onLongPressEnd: (_) => emergency.stopVoiceRecordingAndAnalyze(),
-              child: BeaconPulse(
-                size: 64,
-                color: emergency.isRecordingVoice ? AppColors.alarmRed : AppColors.beaconAmber,
-                urgent: emergency.isRecordingVoice,
-                child: Icon(
-                  emergency.isAnalyzingVoice ? Icons.hourglass_top : Icons.mic,
-                  color: AppColors.paper,
-                ),
-              ),
+    return Row(
+      children: [
+        GestureDetector(
+          onLongPressStart: (_) => emergency.startVoiceRecording(),
+          onLongPressEnd: (_) => emergency.stopVoiceRecordingAndAnalyze(),
+          child: BeaconPulse(
+            size: 64,
+            color: emergency.isRecordingVoice ? AppColors.alarmRed : AppColors.beaconAmber,
+            urgent: emergency.isRecordingVoice,
+            child: Icon(
+              emergency.isAnalyzingVoice ? Icons.hourglass_top : Icons.mic,
+              color: AppColors.paper,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(label, style: AppText.textTheme.bodyLarge),
-            ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(label, style: AppText.textTheme.bodyLarge),
+        ),
+      ],
+    );
+  }
+}
+
+class _TextChannel extends StatelessWidget {
+  final EmergencyProvider emergency;
+  final TextEditingController controller;
+  final VoidCallback onSend;
+  const _TextChannel({required this.emergency, required this.controller, required this.onSend});
+
+  @override
+  Widget build(BuildContext context) {
+    final analyzing = emergency.isAnalyzingText;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: TextField(
+            controller: controller,
+            enabled: !analyzing,
+            minLines: 1,
+            maxLines: 4,
+            textInputAction: TextInputAction.send,
+            onSubmitted: (_) => onSend(),
+            style: AppText.textTheme.bodyLarge,
+            decoration: const InputDecoration(
+              hintText: "Type what's happening…",
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton.filled(
+            onPressed: analyzing ? null : onSend,
+            style: IconButton.styleFrom(
+              backgroundColor: AppColors.beaconAmber,
+              disabledBackgroundColor: AppColors.hairline,
+              shape: const CircleBorder(),
+            ),
+            icon: analyzing
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.inkBase),
+                  )
+                : const Icon(Icons.send_rounded, color: AppColors.inkBase),
+          ),
+        ),
+      ],
     );
   }
 }
