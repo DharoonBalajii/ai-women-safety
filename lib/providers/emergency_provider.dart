@@ -225,13 +225,19 @@ class EmergencyProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Only a real, [VoiceAnalysisResult.analyzed] result may change the
+  /// incident's classification — an unanalyzed result (no key, no clear
+  /// speech, a failed request) still gets logged honestly to the timeline,
+  /// but never overwrites [EmergencyIncident.threatType] with a guess.
   void _applyAnalysisResult(
     EmergencyIncident incident,
     VoiceAnalysisResult result, {
     required UpdateSource source,
   }) {
-    incident.threatType = result.threatType;
-    incident.aiSummary = result.summary;
+    if (result.analyzed && result.threatType != null) {
+      incident.threatType = result.threatType!;
+      incident.aiSummary = result.summary;
+    }
     incident.updates.add(IncidentUpdate(
       id: _uuid.v4(),
       timestamp: DateTime.now(),
@@ -276,6 +282,22 @@ class EmergencyProvider extends ChangeNotifier {
           continue;
         }
 
+        final apiKey = await _settingsService.getSarvamApiKey();
+        final sarvamService = SarvamAIService(apiKey: apiKey);
+
+        // Without a key there's nothing to analyze — say so plainly and
+        // recheck periodically, rather than recording audio it can't use.
+        if (!sarvamService.isConfigured) {
+          _latestAmbientAssessment = AmbientThreatAssessment(
+            reason: 'Ambient monitoring needs a Sarvam AI key — add one in Profile.',
+            timestamp: DateTime.now(),
+            analyzed: false,
+          );
+          notifyListeners();
+          await Future.delayed(const Duration(seconds: 10));
+          continue;
+        }
+
         await _voiceCaptureService.startRecording();
         await Future.delayed(_ambientClipDuration);
 
@@ -288,15 +310,21 @@ class EmergencyProvider extends ChangeNotifier {
         _isAssessingAmbient = true;
         notifyListeners();
 
-        final apiKey = await _settingsService.getSarvamApiKey();
-        final sarvamService = SarvamAIService(apiKey: apiKey);
         final assessment = await sarvamService.assessAmbientAudio(clip);
 
         _isAssessingAmbient = false;
         _latestAmbientAssessment = assessment;
 
+        // Only a real, analyzed danger/caution judgment ever touches the
+        // timeline or escalates dispatch — an unanalyzed cycle (silence,
+        // a failed request) is shown live but never logged as if it meant
+        // something, and "none" is a real judgment, not the default for
+        // "we don't know".
         final incident = _activeIncident;
-        if (incident != null && assessment.level != ThreatLevel.none) {
+        if (incident != null &&
+            assessment.analyzed &&
+            assessment.level != null &&
+            assessment.level != ThreatLevel.none) {
           incident.updates.add(IncidentUpdate(
             id: _uuid.v4(),
             timestamp: DateTime.now(),

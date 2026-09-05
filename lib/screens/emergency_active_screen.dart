@@ -184,14 +184,19 @@ class _AmbientMonitorCard extends StatelessWidget {
     final enabled = emergency.isAmbientMonitoringEnabled;
     final assessing = emergency.isAssessingAmbient;
     final assessment = emergency.latestAmbientAssessment;
-    final level = assessment?.level ?? ThreatLevel.none;
+    // A null level means no real judgment has been made yet (no audio,
+    // no key, a failed request) — it must read as "unknown", never as the
+    // silent-teal "no threat" state, which is itself a real judgment.
+    final level = assessment?.analyzed == true ? assessment!.level : null;
 
-    final dotColor = enabled ? level.color : AppColors.paperMuted;
+    final dotColor = enabled ? (level?.color ?? AppColors.paperMuted) : AppColors.paperMuted;
     final statusLabel = !enabled
         ? 'PAUSED'
         : assessing
             ? 'LISTENING…'
-            : level.label.toUpperCase();
+            : level == null
+                ? 'NOT YET ANALYZED'
+                : level.label.toUpperCase();
 
     return Card(
       child: Padding(
@@ -554,7 +559,10 @@ class _SafeZonesCard extends StatelessWidget {
             else if (places.isEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Text('Finding nearby safe zones…', style: AppText.textTheme.bodyMedium),
+                child: Text(
+                  'No safe places found nearby — check your connection and tap refresh.',
+                  style: AppText.textTheme.bodyMedium,
+                ),
               )
             else
               ...places.take(4).map(

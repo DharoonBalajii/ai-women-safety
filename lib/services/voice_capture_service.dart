@@ -28,7 +28,7 @@ class VoiceCaptureService {
       final path = '${dir.path}/sos_clip_${DateTime.now().millisecondsSinceEpoch}.m4a';
       await _recorder.start(const RecordConfig(), path: path);
     } catch (_) {
-      // No-op: the analysis step falls back to demo mode when no clip exists.
+      // No-op: the analysis step reports "no audio captured" when no clip exists.
     }
   }
 

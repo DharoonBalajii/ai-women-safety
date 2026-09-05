@@ -6,9 +6,11 @@ import 'package:http/http.dart' as http;
 import '../models/safe_place.dart';
 
 /// Finds nearby police stations, hospitals and public establishments using
-/// the free OpenStreetMap Overpass API (no API key required). Falls back to
-/// illustrative sample data if the network call fails, so the "AI safe-zone
-/// recommendation" panel is never empty during a demo.
+/// the free OpenStreetMap Overpass API (no API key required). Returns an
+/// empty list if the lookup fails or turns up nothing real nearby — this
+/// feeds a live emergency screen, so it must never invent a "Police Station
+/// (approx.)" at a fabricated distance. Callers show that honestly as
+/// "couldn't find safe places," not as a result.
 class SafeZoneService {
   static const _overpassUrl = 'https://overpass-api.de/api/interpreter';
 
@@ -34,7 +36,7 @@ out center 15;
           .timeout(const Duration(seconds: 10));
 
       if (response.statusCode != 200) {
-        return _mockPlaces(latitude, longitude);
+        return [];
       }
 
       final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -66,11 +68,10 @@ out center 15;
         ));
       }
 
-      if (places.isEmpty) return _mockPlaces(latitude, longitude);
       places.sort((a, b) => a.distanceMeters.compareTo(b.distanceMeters));
       return places.take(10).toList();
     } catch (_) {
-      return _mockPlaces(latitude, longitude);
+      return [];
     }
   }
 
@@ -83,31 +84,5 @@ out center 15;
       case SafePlaceType.publicPlace:
         return 'Public Establishment';
     }
-  }
-
-  List<SafePlace> _mockPlaces(double latitude, double longitude) {
-    return [
-      SafePlace(
-        name: 'Police Station (approx.)',
-        type: SafePlaceType.police,
-        latitude: latitude + 0.004,
-        longitude: longitude + 0.003,
-        distanceMeters: 650,
-      ),
-      SafePlace(
-        name: 'General Hospital (approx.)',
-        type: SafePlaceType.hospital,
-        latitude: latitude - 0.006,
-        longitude: longitude + 0.004,
-        distanceMeters: 1200,
-      ),
-      SafePlace(
-        name: 'Public Establishment (approx.)',
-        type: SafePlaceType.publicPlace,
-        latitude: latitude + 0.002,
-        longitude: longitude - 0.001,
-        distanceMeters: 300,
-      ),
-    ];
   }
 }

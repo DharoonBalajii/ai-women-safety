@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:http/http.dart' as http;
 
@@ -10,11 +9,15 @@ import '../models/threat_type.dart';
 import '../models/voice_analysis_result.dart';
 
 /// Wraps Sarvam AI's speech-to-text + chat-completion APIs to turn a raw
-/// voice clip into structured emergency context.
+/// voice clip, typed report, or window of ambient audio into structured
+/// emergency context.
 ///
-/// Runs in "mock mode" whenever no API key is configured yet, so the app
-/// is fully demoable before real credentials are wired in. Swap in a real
-/// key via [SettingsService] and every call below becomes a live request.
+/// Every method here is honest about uncertainty: if a real Sarvam key
+/// isn't configured, or a request fails, or there's no clear audio to work
+/// with, the result says so plainly (`analyzed: false`) instead of
+/// inventing a transcript or a threat judgment. This app makes real safety
+/// claims, so it never guesses and never fabricates evidence of an
+/// emergency — or of safety — that wasn't actually observed.
 class SarvamAIService {
   static const _sttUrl = 'https://api.sarvam.ai/speech-to-text';
   static const _chatUrl = 'https://api.sarvam.ai/v1/chat/completions';
@@ -58,35 +61,64 @@ Judge the meaning of the whole transcript, not isolated words.
 ''';
 
   /// Sends a recorded clip to Sarvam speech-to-text, then to Sarvam chat
-  /// completion to extract structured emergency context. Falls back to a
-  /// deterministic local mock when [isConfigured] is false or a request
-  /// fails, so the SOS flow never blocks on network/API issues.
+  /// completion to extract structured emergency context. Returns an
+  /// unanalyzed result — never a guess — if there's no clip, no key
+  /// configured, no clear speech, or the request fails.
   Future<VoiceAnalysisResult> analyzeVoiceClip(File? audioFile) async {
     if (audioFile == null) {
-      return _mockAnalysis(seed: DateTime.now().toIso8601String());
+      return const VoiceAnalysisResult(
+        transcript: '',
+        summary: 'No audio was captured for this update.',
+        analyzed: false,
+      );
     }
     if (!isConfigured) {
-      return _mockAnalysis(seed: audioFile.path);
+      return const VoiceAnalysisResult(
+        transcript: '',
+        summary: "Voice analysis isn't configured — add a Sarvam AI key in Profile to enable it.",
+        analyzed: false,
+      );
+    }
+
+    String transcript = '';
+    String? language;
+    try {
+      final result = await _transcribe(audioFile);
+      transcript = result.$1;
+      language = result.$2;
+    } catch (_) {
+      return const VoiceAnalysisResult(
+        transcript: '',
+        summary: 'Voice analysis failed for this recording.',
+        analyzed: false,
+      );
+    }
+
+    if (transcript.trim().isEmpty) {
+      return VoiceAnalysisResult(
+        transcript: '',
+        detectedLanguage: language,
+        summary: 'No clear speech was captured in this recording.',
+        analyzed: false,
+      );
     }
 
     try {
-      final transcriptResult = await _transcribe(audioFile);
-      final transcript = transcriptResult.$1;
-      final language = transcriptResult.$2;
-
-      if (transcript.trim().isEmpty) {
-        return _mockAnalysis(seed: audioFile.path, transcript: transcript, language: language);
-      }
-
       final context = await _extractContext(transcript);
       return VoiceAnalysisResult(
         transcript: transcript,
         detectedLanguage: language,
         threatType: context.$1,
         summary: context.$2,
+        analyzed: true,
       );
     } catch (_) {
-      return _mockAnalysis(seed: audioFile.path);
+      return VoiceAnalysisResult(
+        transcript: transcript,
+        detectedLanguage: language,
+        summary: 'Recorded: "$transcript" — AI analysis failed.',
+        analyzed: false,
+      );
     }
   }
 
@@ -147,34 +179,43 @@ Judge the meaning of the whole transcript, not isolated words.
 
   /// Listens to a short window of ambient audio (not a deliberate report)
   /// and judges whether it indicates the phone owner is in danger from
-  /// someone present — the "make her quiet" / "tie her up" vs. ordinary
-  /// chatter distinction. Silent by design: never speaks, never prompts,
-  /// just watches and escalates. Falls back to a phrase-based heuristic
-  /// offline so the concept still demos without a live connection.
+  /// someone present. Returns an unanalyzed result — level left null,
+  /// never defaulted to "safe" — whenever there's nothing real to judge.
   Future<AmbientThreatAssessment> assessAmbientAudio(File? audioFile) async {
     final now = DateTime.now();
     if (audioFile == null) {
       return AmbientThreatAssessment(
-        level: ThreatLevel.none,
-        reason: 'No audio captured this cycle.',
-        transcript: '',
+        reason: 'No audio was captured this cycle.',
         timestamp: now,
-        wasMocked: true,
+        analyzed: false,
+      );
+    }
+    if (!isConfigured) {
+      return AmbientThreatAssessment(
+        reason: 'Ambient monitoring needs a Sarvam AI key — add one in Profile.',
+        timestamp: now,
+        analyzed: false,
       );
     }
 
     String transcript = '';
     try {
-      if (isConfigured) {
-        final result = await _transcribe(audioFile);
-        transcript = result.$1;
-      }
+      final result = await _transcribe(audioFile);
+      transcript = result.$1;
     } catch (_) {
-      // Falls through to the heuristic below with an empty transcript.
+      return AmbientThreatAssessment(
+        reason: 'Ambient audio analysis failed for this cycle.',
+        timestamp: now,
+        analyzed: false,
+      );
     }
 
-    if (!isConfigured || transcript.trim().isEmpty) {
-      return _heuristicThreatLevel(transcript, timestamp: now);
+    if (transcript.trim().isEmpty) {
+      return AmbientThreatAssessment(
+        reason: 'No clear audio was captured this cycle.',
+        timestamp: now,
+        analyzed: false,
+      );
     }
 
     try {
@@ -184,9 +225,15 @@ Judge the meaning of the whole transcript, not isolated words.
         reason: assessment.$2,
         transcript: transcript,
         timestamp: now,
+        analyzed: true,
       );
     } catch (_) {
-      return _heuristicThreatLevel(transcript, timestamp: now);
+      return AmbientThreatAssessment(
+        reason: 'Ambient audio analysis failed for this cycle.',
+        transcript: transcript,
+        timestamp: now,
+        analyzed: false,
+      );
     }
   }
 
@@ -228,136 +275,42 @@ Judge the meaning of the whole transcript, not isolated words.
     );
   }
 
-  /// Offline stand-in for [_classifyThreatLevel]: a curated phrase list
-  /// covering the restraint/silencing/coercion language this feature
-  /// exists to catch. Deliberately biased toward "none" — everyday
-  /// conversation about food, work, or errands must not false-positive.
-  static const _dangerPhrases = [
-    'make her quiet', 'make him quiet', 'keep her quiet', 'keep him quiet',
-    'shut her up', 'shut him up', 'shut up', 'stay quiet', "don't scream",
-    'do not scream', "don't shout", "don't move", 'tie her up', 'tie him up',
-    'tie her hands', 'get in the car', 'grab her', 'grab him', 'hold her down',
-    "don't make a sound", 'stop struggling', 'give me your phone',
-  ];
-  static const _cautionPhrases = [
-    "hurry up", "someone's coming", 'watch her', 'watch him', 'not here',
-    'follow her', 'follow him', 'wait till she', 'wait till he',
-  ];
-
-  /// Without a live transcript (no key configured, or the mic/network
-  /// failed this cycle) there's nothing real to judge — same problem
-  /// [_mockAnalysis] solves for voice reports: rotate through plausible
-  /// overheard snippets so the none/caution/danger distinction is still
-  /// demonstrable end to end, mundane chatter included on purpose.
-  static const _ambientSampleTranscripts = [
-    'Did you remember to pick up vegetables for dinner tonight?',
-    "Let's finish the homework before it gets too late.",
-    'The meeting got pushed to three o\'clock tomorrow.',
-    'Traffic is bad, we might be ten minutes late.',
-    'Make her quiet, someone will hear us.',
-    'Tie her up and get in the car, hurry.',
-    "Don't scream or this gets worse for you.",
-  ];
-
-  AmbientThreatAssessment _heuristicThreatLevel(String transcript, {required DateTime timestamp}) {
-    final isSimulated = transcript.trim().isEmpty;
-    final effective = isSimulated
-        ? _ambientSampleTranscripts[Random(timestamp.millisecondsSinceEpoch).nextInt(_ambientSampleTranscripts.length)]
-        : transcript;
-
-    final lower = effective.toLowerCase();
-    ThreatLevel level = ThreatLevel.none;
-    String reason = 'Ordinary conversation overheard: "$effective"';
-
-    for (final phrase in _dangerPhrases) {
-      if (lower.contains(phrase)) {
-        level = ThreatLevel.danger;
-        reason = 'Overheard language suggesting restraint or coercion: "$effective"';
-        break;
-      }
-    }
-    if (level == ThreatLevel.none) {
-      for (final phrase in _cautionPhrases) {
-        if (lower.contains(phrase)) {
-          level = ThreatLevel.caution;
-          reason = 'Tense or ambiguous language overheard: "$effective"';
-          break;
-        }
-      }
-    }
-
-    return AmbientThreatAssessment(
-      level: level,
-      reason: isSimulated ? '[Demo mode] $reason' : reason,
-      transcript: effective,
-      timestamp: timestamp,
-      wasMocked: true,
-    );
-  }
-
   /// Text-input counterpart to [analyzeVoiceClip], for when speaking aloud
-  /// isn't safe or possible. Skips speech-to-text and sends the typed
-  /// message straight to Sarvam chat completion for threat extraction —
-  /// same mock-mode fallback, same structured result either way.
+  /// isn't safe or possible. The typed message is real regardless of
+  /// whether AI classification succeeds, so it's always reported verbatim;
+  /// only [analyzed] and [threatType] reflect whether Sarvam actually
+  /// classified it.
   Future<VoiceAnalysisResult> analyzeTextMessage(String message) async {
     final trimmed = message.trim();
     if (trimmed.isEmpty) {
-      return _mockAnalysis(seed: DateTime.now().toIso8601String());
+      return const VoiceAnalysisResult(
+        transcript: '',
+        summary: 'No message was entered.',
+        analyzed: false,
+      );
     }
     if (!isConfigured) {
-      return _mockAnalysis(seed: trimmed, transcript: trimmed, language: 'en-IN', sourceLabel: 'text input');
+      return VoiceAnalysisResult(
+        transcript: trimmed,
+        summary: 'Reported: "$trimmed"',
+        analyzed: false,
+      );
     }
 
     try {
       final context = await _extractContext(trimmed);
       return VoiceAnalysisResult(
         transcript: trimmed,
-        detectedLanguage: null,
         threatType: context.$1,
         summary: context.$2,
+        analyzed: true,
       );
     } catch (_) {
-      return _mockAnalysis(seed: trimmed, transcript: trimmed, sourceLabel: 'text input');
+      return VoiceAnalysisResult(
+        transcript: trimmed,
+        summary: 'Reported: "$trimmed" — AI analysis failed.',
+        analyzed: false,
+      );
     }
-  }
-
-  VoiceAnalysisResult _mockAnalysis({
-    required String seed,
-    String? transcript,
-    String? language,
-    String sourceLabel = 'voice input',
-  }) {
-    const sampleTranscripts = [
-      'Someone has been following me since I left the station.',
-      'A stranger is threatening me near the parking lot.',
-      'I feel dizzy and I think I need medical help.',
-      'There has been an accident, please send help.',
-    ];
-    final rng = Random(seed.hashCode);
-    final pickedTranscript = transcript?.isNotEmpty == true
-        ? transcript!
-        : sampleTranscripts[rng.nextInt(sampleTranscripts.length)];
-
-    ThreatType type;
-    if (pickedTranscript.toLowerCase().contains('follow')) {
-      type = ThreatType.following;
-    } else if (pickedTranscript.toLowerCase().contains('threat')) {
-      type = ThreatType.threatened;
-    } else if (pickedTranscript.toLowerCase().contains('dizzy') ||
-        pickedTranscript.toLowerCase().contains('medical')) {
-      type = ThreatType.medical;
-    } else if (pickedTranscript.toLowerCase().contains('accident')) {
-      type = ThreatType.accident;
-    } else {
-      type = ThreatType.unknown;
-    }
-
-    return VoiceAnalysisResult(
-      transcript: pickedTranscript,
-      detectedLanguage: language ?? 'en-IN',
-      threatType: type,
-      summary: '[Demo mode] ${type.label} detected from $sourceLabel.',
-      wasMocked: true,
-    );
   }
 }

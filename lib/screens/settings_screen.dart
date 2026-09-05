@@ -45,8 +45,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     settings.isSarvamConfigured
-                        ? 'A key is configured. Voice SOS uses live speech-to-text and AI context extraction.'
-                        : 'No key yet — Voice SOS runs in demo mode with realistic sample analysis.',
+                        ? 'A key is configured. Voice SOS and ambient monitoring use live speech-to-text and AI analysis.'
+                        : "No key yet — voice reports and ambient monitoring can't be analyzed without one. Your exact location is still shared either way.",
                     style: AppText.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 16),
