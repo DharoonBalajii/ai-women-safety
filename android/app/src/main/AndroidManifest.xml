@@ -6,7 +6,12 @@
     <application
         android:label="Raksha"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+        <!-- TODO before release: the backend must be served over HTTPS in
+             production; remove this blanket cleartext allowance (or scope
+             it to the dev host only via a network security config) once
+             it is. -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
