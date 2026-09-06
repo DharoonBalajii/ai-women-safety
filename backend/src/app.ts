@@ -6,6 +6,8 @@ import { env } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { aiRouter } from './routes/ai.routes.js';
 import { authRouter } from './routes/auth.routes.js';
+import { guardianRouter } from './routes/guardian.routes.js';
+import { incidentRouter } from './routes/incident.routes.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
 
 export const app = express();
@@ -25,6 +27,8 @@ app.get('/health', (_req, res) => {
 
 app.use('/auth', authRouter);
 app.use('/ai', aiRouter);
+app.use('/guardian', guardianRouter);
+app.use('/incidents', incidentRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -55,6 +55,7 @@ model ProtectedProfile {
 
   emergencyContacts    EmergencyContact[]
   guardianRelationships GuardianRelationship[] @relation("ProtectedUserRelationships")
+  incidents            Incident[]
 }
 
 model GuardianProfile {
@@ -97,6 +98,36 @@ model EmergencyContact {
   createdAt         DateTime         @default(now())
 
   @@index([protectedUserId])
+}
+
+enum IncidentStatus {
+  ACTIVE        // reported, no guardian has acted on it yet
+  ACKNOWLEDGED  // a guardian has seen it and confirmed they're aware
+  RESPONDING    // a guardian is actively on the way / handling it
+  RESOLVED      // the protected user confirmed they're safe
+  CANCELLED     // the protected user cancelled a mistaken trigger
+}
+
+/// A live or past SOS report. Guardians only ever read one of these via
+/// [GuardianRepository.findActiveGuardiansFor]'s ACTIVE-relationship
+/// check — never by knowing an id or phone number directly.
+model Incident {
+  id               String          @id @default(uuid())
+  protectedUserId  String
+  protectedUser    ProtectedProfile @relation(fields: [protectedUserId], references: [id], onDelete: Cascade)
+  status           IncidentStatus  @default(ACTIVE)
+  threatType       String
+  aiSummary        String?
+  latitude         Float?
+  longitude        Float?
+  locationAt       DateTime?
+  batteryPercent   Int?
+  respondedByGuardianId String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  resolvedAt       DateTime?
+
+  @@index([protectedUserId, status])
 }
 
 /// Server-side OTP request state for the MSG91 flow. MSG91 itself generates,
