@@ -13,13 +13,12 @@ import '../models/threat_level.dart';
 import '../models/threat_type.dart';
 import '../models/trusted_contact.dart';
 import '../models/voice_analysis_result.dart';
+import '../services/ai_analysis_service.dart';
 import '../services/alert_service.dart';
 import '../services/contacts_store.dart';
 import '../services/incident_store.dart';
 import '../services/location_service.dart';
 import '../services/safe_zone_service.dart';
-import '../services/sarvam_ai_service.dart';
-import '../services/settings_service.dart';
 import '../services/voice_capture_service.dart';
 
 /// Orchestrates a live emergency session: location capture, voice/text/
@@ -32,7 +31,6 @@ class EmergencyProvider extends ChangeNotifier {
   final LocationService _locationService = LocationService();
   final VoiceCaptureService _voiceCaptureService = VoiceCaptureService();
   final SafeZoneService _safeZoneService = SafeZoneService();
-  final SettingsService _settingsService = SettingsService();
   final IncidentStore _incidentStore = IncidentStore();
   final ContactsStore _contactsStore = ContactsStore();
   final AlertService alertService = AlertService();
@@ -152,12 +150,9 @@ class EmergencyProvider extends ChangeNotifier {
     notifyListeners();
 
     final file = await _voiceCaptureService.stopRecording();
-    final apiKey = await _settingsService.getSarvamApiKey();
-    final sarvamService = SarvamAIService(apiKey: apiKey);
-
     final incident = _activeIncident ?? await _startIncident(type: ThreatType.unknown);
 
-    final result = await sarvamService.analyzeVoiceClip(file);
+    final result = await aiAnalysisService.analyzeVoiceClip(file);
     _applyAnalysisResult(incident, result, source: UpdateSource.voice);
 
     _isAnalyzingVoice = false;
@@ -175,11 +170,9 @@ class EmergencyProvider extends ChangeNotifier {
     _isAnalyzingText = true;
     notifyListeners();
 
-    final apiKey = await _settingsService.getSarvamApiKey();
-    final sarvamService = SarvamAIService(apiKey: apiKey);
     final incident = _activeIncident ?? await _startIncident(type: ThreatType.unknown);
 
-    final result = await sarvamService.analyzeTextMessage(trimmed);
+    final result = await aiAnalysisService.analyzeTextMessage(trimmed);
     _applyAnalysisResult(incident, result, source: UpdateSource.textInput);
 
     _isAnalyzingText = false;
@@ -246,22 +239,6 @@ class EmergencyProvider extends ChangeNotifier {
           continue;
         }
 
-        final apiKey = await _settingsService.getSarvamApiKey();
-        final sarvamService = SarvamAIService(apiKey: apiKey);
-
-        // Without a key there's nothing to analyze — say so plainly and
-        // recheck periodically, rather than recording audio it can't use.
-        if (!sarvamService.isConfigured) {
-          _latestAmbientAssessment = AmbientThreatAssessment(
-            reason: 'Ambient monitoring needs a Sarvam AI key — add one in Profile.',
-            timestamp: DateTime.now(),
-            analyzed: false,
-          );
-          notifyListeners();
-          await Future.delayed(const Duration(seconds: 10));
-          continue;
-        }
-
         await _voiceCaptureService.startRecording();
         await Future.delayed(_ambientClipDuration);
 
@@ -274,7 +251,7 @@ class EmergencyProvider extends ChangeNotifier {
         _isAssessingAmbient = true;
         notifyListeners();
 
-        final assessment = await sarvamService.assessAmbientAudio(clip);
+        final assessment = await aiAnalysisService.assessAmbientAudio(clip);
 
         _isAssessingAmbient = false;
         _latestAmbientAssessment = assessment;
