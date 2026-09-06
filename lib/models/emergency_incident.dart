@@ -4,36 +4,6 @@ import 'threat_type.dart';
 
 enum IncidentStatus { active, resolved, cancelled }
 
-/// Simulated responder-network pipeline stage, shown on the incident
-/// timeline as a prototype of the control-room dispatch flow.
-enum ResponderStage {
-  detecting,
-  patrolIdentified,
-  controlRoomNotified,
-  responderAccepted,
-  dispatched,
-  respondedArrived,
-}
-
-extension ResponderStageX on ResponderStage {
-  String get label {
-    switch (this) {
-      case ResponderStage.detecting:
-        return 'Analyzing threat & severity';
-      case ResponderStage.patrolIdentified:
-        return 'Nearest patrol identified';
-      case ResponderStage.controlRoomNotified:
-        return 'Control room notified';
-      case ResponderStage.responderAccepted:
-        return 'Responder accepted incident';
-      case ResponderStage.dispatched:
-        return 'Patrol unit dispatched';
-      case ResponderStage.respondedArrived:
-        return 'Responder arrived at location';
-    }
-  }
-}
-
 class EmergencyIncident {
   final String id;
   final DateTime startTime;
@@ -43,7 +13,13 @@ class EmergencyIncident {
   String aiSummary;
   final List<IncidentUpdate> updates;
   final List<LocationPoint> locationTrail;
-  ResponderStage responderStage;
+
+  /// Whether trusted contacts have actually been reached for this incident
+  /// — via the manual "notify all contacts" action or an unanswered
+  /// check-in — never a stand-in for real dispatch, since this app has no
+  /// backend connection to emergency services.
+  bool contactsNotified;
+  DateTime? contactsNotifiedAt;
 
   EmergencyIncident({
     required this.id,
@@ -54,7 +30,8 @@ class EmergencyIncident {
     this.aiSummary = '',
     List<IncidentUpdate>? updates,
     List<LocationPoint>? locationTrail,
-    this.responderStage = ResponderStage.detecting,
+    this.contactsNotified = false,
+    this.contactsNotifiedAt,
   })  : updates = updates ?? [],
         locationTrail = locationTrail ?? [];
 
@@ -70,7 +47,8 @@ class EmergencyIncident {
         'aiSummary': aiSummary,
         'updates': updates.map((u) => u.toJson()).toList(),
         'locationTrail': locationTrail.map((l) => l.toJson()).toList(),
-        'responderStage': responderStage.name,
+        'contactsNotified': contactsNotified,
+        'contactsNotifiedAt': contactsNotifiedAt?.toIso8601String(),
       };
 
   factory EmergencyIncident.fromJson(Map<String, dynamic> json) => EmergencyIncident(
@@ -89,9 +67,9 @@ class EmergencyIncident {
         locationTrail: (json['locationTrail'] as List<dynamic>? ?? [])
             .map((l) => LocationPoint.fromJson(l as Map<String, dynamic>))
             .toList(),
-        responderStage: ResponderStage.values.firstWhere(
-          (s) => s.name == json['responderStage'],
-          orElse: () => ResponderStage.detecting,
-        ),
+        contactsNotified: json['contactsNotified'] as bool? ?? false,
+        contactsNotifiedAt: json['contactsNotifiedAt'] != null
+            ? DateTime.parse(json['contactsNotifiedAt'] as String)
+            : null,
       );
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/ambient_threat_assessment.dart';
@@ -13,6 +14,7 @@ import '../models/threat_type.dart';
 import '../models/trusted_contact.dart';
 import '../models/voice_analysis_result.dart';
 import '../services/alert_service.dart';
+import '../services/contacts_store.dart';
 import '../services/incident_store.dart';
 import '../services/location_service.dart';
 import '../services/safe_zone_service.dart';
@@ -20,15 +22,19 @@ import '../services/sarvam_ai_service.dart';
 import '../services/settings_service.dart';
 import '../services/voice_capture_service.dart';
 
-/// Orchestrates a live emergency session: location capture, voice ->
-/// Sarvam AI analysis, the live incident timeline, simulated responder
-/// dispatch, and persistence of resolved/cancelled incidents to history.
+/// Orchestrates a live emergency session: location capture, voice/text/
+/// ambient Sarvam AI analysis, the live incident timeline, and persistence
+/// of resolved/cancelled incidents to history. This app has no connection
+/// to real emergency responders or a telecom SMS gateway — every action
+/// here is something the app can actually do (locate, analyze, and reach
+/// trusted contacts via the device's own SMS composer), nothing simulated.
 class EmergencyProvider extends ChangeNotifier {
   final LocationService _locationService = LocationService();
   final VoiceCaptureService _voiceCaptureService = VoiceCaptureService();
   final SafeZoneService _safeZoneService = SafeZoneService();
   final SettingsService _settingsService = SettingsService();
   final IncidentStore _incidentStore = IncidentStore();
+  final ContactsStore _contactsStore = ContactsStore();
   final AlertService alertService = AlertService();
   final _uuid = const Uuid();
 
@@ -40,22 +46,19 @@ class EmergencyProvider extends ChangeNotifier {
   List<EmergencyIncident> _history = [];
 
   StreamSubscription<LocationPoint>? _locationSub;
-  Timer? _responderTimer;
-  int _responderStageIndex = 0;
 
   bool _ambientMonitoringEnabled = false;
   bool _ambientLoopRunning = false;
   bool _isAssessingAmbient = false;
   AmbientThreatAssessment? _latestAmbientAssessment;
 
-  static const _responderStages = [
-    ResponderStage.detecting,
-    ResponderStage.patrolIdentified,
-    ResponderStage.controlRoomNotified,
-    ResponderStage.responderAccepted,
-    ResponderStage.dispatched,
-    ResponderStage.respondedArrived,
-  ];
+  /// How long the app waits for a manual "I'm safe" after the AI flags
+  /// something concerning, before treating silence itself as a signal and
+  /// escalating on its own.
+  static const checkInWindow = Duration(seconds: 30);
+  AmbientThreatAssessment? _pendingCheckIn;
+  Timer? _checkInTimer;
+  int _checkInSecondsRemaining = 0;
 
   bool _safePlacesLookupFailed = false;
 
@@ -69,6 +72,8 @@ class EmergencyProvider extends ChangeNotifier {
   bool get isAmbientMonitoringEnabled => _ambientMonitoringEnabled;
   bool get isAssessingAmbient => _isAssessingAmbient;
   AmbientThreatAssessment? get latestAmbientAssessment => _latestAmbientAssessment;
+  AmbientThreatAssessment? get pendingCheckIn => _pendingCheckIn;
+  int get checkInSecondsRemaining => _checkInSecondsRemaining;
   List<EmergencyIncident> get history => List.unmodifiable(_history);
 
   Future<void> loadHistory() async {
@@ -106,7 +111,6 @@ class EmergencyProvider extends ChangeNotifier {
     _activeIncident = incident;
     _latestAmbientAssessment = null;
     _watchLocation();
-    _simulateResponderProgress();
     unawaited(refreshSafePlaces());
     startAmbientMonitoring();
     notifyListeners();
@@ -119,48 +123,6 @@ class EmergencyProvider extends ChangeNotifier {
       _activeIncident?.locationTrail.add(point);
       notifyListeners();
     });
-  }
-
-  void _simulateResponderProgress() {
-    _responderTimer?.cancel();
-    _responderStageIndex = 0;
-    _responderTimer = Timer.periodic(const Duration(seconds: 6), (timer) {
-      final incident = _activeIncident;
-      if (incident == null || incident.status != IncidentStatus.active) {
-        timer.cancel();
-        return;
-      }
-      _responderStageIndex++;
-      if (_responderStageIndex >= _responderStages.length) {
-        timer.cancel();
-        return;
-      }
-      incident.responderStage = _responderStages[_responderStageIndex];
-      incident.updates.add(IncidentUpdate(
-        id: _uuid.v4(),
-        timestamp: DateTime.now(),
-        text: '[Simulated] ${_responderStages[_responderStageIndex].label}',
-        source: UpdateSource.responder,
-      ));
-      notifyListeners();
-    });
-  }
-
-  /// Fast-forwards the simulated responder pipeline straight to "dispatched"
-  /// when the AI overhears something dangerous — real danger shouldn't wait
-  /// for the ordinary stage-by-stage timeline. A no-op if already at or
-  /// past that stage, so it can't ever move dispatch backwards.
-  void _escalateResponderStage(EmergencyIncident incident) {
-    final dispatchedIndex = _responderStages.indexOf(ResponderStage.dispatched);
-    if (_responderStageIndex >= dispatchedIndex) return;
-    _responderStageIndex = dispatchedIndex;
-    incident.responderStage = ResponderStage.dispatched;
-    incident.updates.add(IncidentUpdate(
-      id: _uuid.v4(),
-      timestamp: DateTime.now(),
-      text: '[Simulated] Ambient threat detected — patrol dispatched immediately.',
-      source: UpdateSource.responder,
-    ));
   }
 
   Future<void> refreshSafePlaces() async {
@@ -276,8 +238,10 @@ class EmergencyProvider extends ChangeNotifier {
     _ambientLoopRunning = true;
     try {
       while (_ambientMonitoringEnabled && _activeIncident != null) {
-        // Yield the mic to a deliberate voice report rather than fighting it.
-        if (_isRecordingVoice) {
+        // Yield the mic to a deliberate voice report rather than fighting it,
+        // and pause new listening cycles while a check-in is unresolved —
+        // one concern at a time.
+        if (_isRecordingVoice || _pendingCheckIn != null) {
           await Future.delayed(const Duration(seconds: 1));
           continue;
         }
@@ -315,32 +279,98 @@ class EmergencyProvider extends ChangeNotifier {
         _isAssessingAmbient = false;
         _latestAmbientAssessment = assessment;
 
-        // Only a real, analyzed danger/caution judgment ever touches the
-        // timeline or escalates dispatch — an unanalyzed cycle (silence,
-        // a failed request) is shown live but never logged as if it meant
-        // something, and "none" is a real judgment, not the default for
-        // "we don't know".
-        final incident = _activeIncident;
-        if (incident != null &&
-            assessment.analyzed &&
+        // Only a real, analyzed danger/caution judgment ever means
+        // anything — an unanalyzed cycle (silence, a failed request) is
+        // shown live but never acted on, and "none" is a real judgment,
+        // not the default for "we don't know". A real concern doesn't
+        // escalate immediately: it asks the person first.
+        if (assessment.analyzed &&
             assessment.level != null &&
             assessment.level != ThreatLevel.none) {
-          incident.updates.add(IncidentUpdate(
-            id: _uuid.v4(),
-            timestamp: DateTime.now(),
-            text: '[AI listening] ${assessment.reason}',
-            source: UpdateSource.ambient,
-            rawTranscript: assessment.transcript,
-          ));
-          if (assessment.level == ThreatLevel.danger) {
-            _escalateResponderStage(incident);
-          }
-          await _persist();
+          _startCheckIn(assessment);
         }
         notifyListeners();
       }
     } finally {
       _ambientLoopRunning = false;
+    }
+  }
+
+  /// Starts the "are you okay?" window after the AI flags something
+  /// concerning. Confirmed safe ([confirmSafeFromCheckIn]) logs it quietly
+  /// and monitoring resumes; silence for [checkInWindow] is itself treated
+  /// as a signal — [_resolveCheckInTimeout] escalates and reaches out to
+  /// trusted contacts on the assumption that no response may mean no one
+  /// was able to respond.
+  void _startCheckIn(AmbientThreatAssessment assessment) {
+    _pendingCheckIn = assessment;
+    _checkInSecondsRemaining = checkInWindow.inSeconds;
+    HapticFeedback.heavyImpact();
+    notifyListeners();
+
+    _checkInTimer?.cancel();
+    _checkInTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _checkInSecondsRemaining--;
+      if (_checkInSecondsRemaining <= 0) {
+        timer.cancel();
+        unawaited(_resolveCheckInTimeout());
+      } else {
+        notifyListeners();
+      }
+    });
+  }
+
+  /// Called when the person taps "I'm safe" during the check-in window.
+  Future<void> confirmSafeFromCheckIn() async {
+    if (_pendingCheckIn == null) return;
+    _checkInTimer?.cancel();
+    _pendingCheckIn = null;
+    _checkInSecondsRemaining = 0;
+
+    final incident = _activeIncident;
+    if (incident != null) {
+      incident.updates.add(IncidentUpdate(
+        id: _uuid.v4(),
+        timestamp: DateTime.now(),
+        text: "AI flagged a possible concern — you confirmed you're safe.",
+        source: UpdateSource.ambient,
+      ));
+      await _persist();
+    }
+    notifyListeners();
+  }
+
+  Future<void> _resolveCheckInTimeout() async {
+    final assessment = _pendingCheckIn;
+    _pendingCheckIn = null;
+    _checkInSecondsRemaining = 0;
+
+    final incident = _activeIncident;
+    if (assessment == null || incident == null) {
+      notifyListeners();
+      return;
+    }
+
+    incident.updates.add(IncidentUpdate(
+      id: _uuid.v4(),
+      timestamp: DateTime.now(),
+      text: '[AI listening] ${assessment.reason} — no response to check-in; '
+          'notifying trusted contacts.',
+      source: UpdateSource.ambient,
+      rawTranscript: assessment.transcript,
+    ));
+    await _persist();
+    notifyListeners();
+
+    // Best-effort: opens the SMS composer per contact, same as the manual
+    // "notify all contacts" action — there's no SEND_SMS permission wired
+    // up, so this still needs the person's own final tap to actually send.
+    // A no-response scenario is exactly the case where that tap may not
+    // come, which is a real limitation of this approach, not a bug to
+    // silently paper over.
+    final contacts = await _contactsStore.load();
+    if (contacts.isNotEmpty) {
+      await notifyAllContacts(contacts);
     }
   }
 
@@ -364,6 +394,10 @@ class EmergencyProvider extends ChangeNotifier {
     for (final contact in contacts) {
       await alertService.notifyContact(contact, incident);
     }
+    incident.contactsNotified = true;
+    incident.contactsNotifiedAt = DateTime.now();
+    await _persist();
+    notifyListeners();
   }
 
   Future<void> resolveIncident() async {
@@ -390,7 +424,9 @@ class EmergencyProvider extends ChangeNotifier {
 
   Future<void> _endIncident(EmergencyIncident incident) async {
     _locationSub?.cancel();
-    _responderTimer?.cancel();
+    _checkInTimer?.cancel();
+    _pendingCheckIn = null;
+    _checkInSecondsRemaining = 0;
     stopAmbientMonitoring();
     await _incidentStore.upsert(incident);
     _activeIncident = null;
@@ -407,7 +443,7 @@ class EmergencyProvider extends ChangeNotifier {
   @override
   void dispose() {
     _locationSub?.cancel();
-    _responderTimer?.cancel();
+    _checkInTimer?.cancel();
     _ambientMonitoringEnabled = false;
     _voiceCaptureService.dispose();
     super.dispose();

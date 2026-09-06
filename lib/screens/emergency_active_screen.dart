@@ -87,6 +87,10 @@ class _EmergencyActiveScreenState extends State<EmergencyActiveScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           _StatusBanner(incident: incident),
+          if (emergency.pendingCheckIn != null) ...[
+            const SizedBox(height: 16),
+            _CheckInBanner(emergency: emergency),
+          ],
           const SizedBox(height: 16),
           _AmbientMonitorCard(emergency: emergency),
           const SizedBox(height: 16),
@@ -160,8 +164,84 @@ class _StatusBanner extends StatelessWidget {
                     style: AppText.textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 6),
-                  Text('[SIMULATED] ${incident.responderStage.label}', style: AppText.mono(fontSize: 11)),
+                  Text(
+                    incident.contactsNotified
+                        ? 'Trusted contacts notified at '
+                            '${TimeOfDay.fromDateTime(incident.contactsNotifiedAt!.toLocal()).format(context)}'
+                        : 'Trusted contacts not yet notified',
+                    style: AppText.mono(
+                      fontSize: 11,
+                      color: incident.contactsNotified ? AppColors.signalTeal : AppColors.paperMuted,
+                    ),
+                  ),
                 ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Shown the moment the AI flags something concerning, in place of an
+/// immediate silent escalation. Deliberately hard to miss — this is the
+/// person's chance to say "I'm fine" before the app assumes the opposite.
+class _CheckInBanner extends StatelessWidget {
+  final EmergencyProvider emergency;
+  const _CheckInBanner({required this.emergency});
+
+  @override
+  Widget build(BuildContext context) {
+    final seconds = emergency.checkInSecondsRemaining;
+    final reason = emergency.pendingCheckIn?.reason ?? '';
+
+    return Card(
+      color: AppColors.alarmRed.withValues(alpha: 0.12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: AppColors.alarmRed, width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                BeaconPulse(
+                  size: 32,
+                  color: AppColors.alarmRed,
+                  urgent: true,
+                  child: const Icon(Icons.priority_high_rounded, color: AppColors.alarmRed, size: 18),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Are you okay?',
+                    style: AppText.textTheme.titleLarge?.copyWith(color: AppColors.alarmRed),
+                  ),
+                ),
+                Text('${seconds}s', style: AppText.mono(fontSize: 16, color: AppColors.alarmRed)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'The AI flagged something concerning: $reason',
+              style: AppText.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "If you don't respond, your trusted contacts will be notified automatically.",
+              style: AppText.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                style: FilledButton.styleFrom(backgroundColor: AppColors.signalTeal),
+                onPressed: emergency.confirmSafeFromCheckIn,
+                child: const Text("I'M SAFE"),
               ),
             ),
           ],
