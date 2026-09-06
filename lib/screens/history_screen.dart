@@ -139,7 +139,7 @@ class IncidentDetailScreen extends StatelessWidget {
           const SizedBox(height: 20),
           Text('TIMELINE', style: HomeText.eyebrow()),
           const SizedBox(height: 10),
-          IncidentTimeline(updates: incident.updates, light: true),
+          IncidentTimeline(updates: incident.updates),
         ],
       ),
     );

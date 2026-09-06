@@ -50,4 +50,15 @@ extension ThreatTypeX on ThreatType {
       orElse: () => ThreatType.unknown,
     );
   }
+
+  /// Unlike [fromName], never defaults to "unknown" — a missing/
+  /// unrecognized name means the AI didn't actually classify this report,
+  /// which callers must treat as unanalyzed rather than a real verdict.
+  static ThreatType? fromNameOrNull(String? name) {
+    if (name == null) return null;
+    for (final type in ThreatType.values) {
+      if (type.name == name) return type;
+    }
+    return null;
+  }
 }

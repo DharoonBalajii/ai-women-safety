@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// A second, deliberately separate palette from [AppColors]: the calm,
-/// everyday "personal companion" surfaces (home, activity, safety circle,
-/// profile) read warm and light, while the live emergency screen stays on
-/// the dark high-contrast "night instrument panel" tokens — that contrast
-/// is a real UX choice (outdoor/night legibility during an actual SOS),
-/// not an inconsistency to merge away.
+/// The app-wide light "personal companion" palette — warm cream
+/// background, indigo/teal accents, crimson reserved for danger/SOS.
 class HomeColors {
   HomeColors._();
 
@@ -17,6 +13,7 @@ class HomeColors {
   static const brandIndigo = Color(0xFF273C5A);
   static const brandTeal = Color(0xFF4E8B82);
   static const statusGreen = Color(0xFF5B9B72);
+  static const caution = Color(0xFFC98A3F);
   static const sosCrimson = Color(0xFFC94C5B);
   static const sosCrimsonDark = Color(0xFFB53D4C);
   static const inactiveNav = Color(0xFF9CA3AF);

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_theme.dart';
+import '../theme/home_theme.dart';
 
 /// Assessed danger level of a short window of ambient/background audio,
 /// as distinct from [ThreatType] (which classifies what a *reporter* says
@@ -22,11 +22,11 @@ extension ThreatLevelX on ThreatLevel {
   Color get color {
     switch (this) {
       case ThreatLevel.none:
-        return AppColors.signalTeal;
+        return HomeColors.statusGreen;
       case ThreatLevel.caution:
-        return AppColors.beaconAmber;
+        return HomeColors.caution;
       case ThreatLevel.danger:
-        return AppColors.alarmRed;
+        return HomeColors.sosCrimson;
     }
   }
 
@@ -43,5 +43,16 @@ extension ThreatLevelX on ThreatLevel {
 
   static ThreatLevel fromName(String? name) {
     return ThreatLevel.values.firstWhere((t) => t.name == name, orElse: () => ThreatLevel.none);
+  }
+
+  /// Unlike [fromName], never defaults to "none" — a missing/unrecognized
+  /// name means no real judgment was made, which callers must treat as
+  /// unanalyzed, not as a confirmed-safe verdict.
+  static ThreatLevel? fromNameOrNull(String? name) {
+    if (name == null) return null;
+    for (final level in ThreatLevel.values) {
+      if (level.name == name) return level;
+    }
+    return null;
   }
 }

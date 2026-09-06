@@ -44,16 +44,22 @@ class _ContactsScreenState extends State<ContactsScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(controller: nameController, decoration: _lightInput('Name')),
+            TextField(
+              controller: nameController,
+              style: HomeText.body(color: HomeColors.textPrimary),
+              decoration: _lightInput('Name'),
+            ),
             const SizedBox(height: 12),
             TextField(
               controller: phoneController,
               keyboardType: TextInputType.phone,
+              style: HomeText.body(color: HomeColors.textPrimary),
               decoration: _lightInput('Phone number'),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: relationshipController,
+              style: HomeText.body(color: HomeColors.textPrimary),
               decoration: _lightInput('Relationship'),
             ),
           ],
