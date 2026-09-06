@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { verifyToken } from '@clerk/backend';
 import { env } from '../config/env.js';
 import { HttpError } from './error-handler.js';
+import { logger } from '../lib/logger.js';
 
 declare global {
   namespace Express {
@@ -24,15 +25,28 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
     return;
   }
 
-  const result = await verifyToken(token, { secretKey: env.CLERK_SECRET_KEY });
-  if (result.errors) {
-    next(new HttpError(401, 'Invalid or expired token'));
-    return;
-  }
+  // verifyToken rejects (rather than resolving with `.errors`) for some
+  // failure modes — an expired token in particular throws a
+  // TokenVerificationError instead of the documented {data, errors} shape.
+  // Letting that propagate would crash the whole process (an uncaught
+  // rejection outside Express's own try/catch for sync handlers), taking
+  // every other request down with it, so every failure mode here — thrown
+  // or resolved — must end up as a 401, never an unhandled exception.
+  try {
+    const result = await verifyToken(token, { secretKey: env.CLERK_SECRET_KEY });
+    if (result.errors) {
+      logger.warn({ errors: result.errors }, 'requireAuth: verifyToken returned errors');
+      next(new HttpError(401, 'Invalid or expired token'));
+      return;
+    }
 
-  // @clerk/backend's JwtPayload re-exports through @clerk/shared/types, which
-  // this project's moduleResolution doesn't fully resolve — `sub` is
-  // documented and stable on every Clerk token regardless.
-  req.clerkUserId = (result.data as { sub: string }).sub;
-  next();
+    // @clerk/backend's JwtPayload re-exports through @clerk/shared/types, which
+    // this project's moduleResolution doesn't fully resolve — `sub` is
+    // documented and stable on every Clerk token regardless.
+    req.clerkUserId = (result.data as { sub: string }).sub;
+    next();
+  } catch (err) {
+    logger.warn({ err }, 'requireAuth: verifyToken threw');
+    next(new HttpError(401, 'Invalid or expired token'));
+  }
 }

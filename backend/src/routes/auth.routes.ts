@@ -6,9 +6,13 @@ import { asyncHandler } from '../lib/async-handler.js';
 export const authRouter = Router();
 
 // IP-level backstop on top of the per-phone DB check inside sendOtp itself.
+// /refresh alone can legitimately fire many times a minute — every
+// authenticated screen with a polling loop (e.g. the guardian dashboard)
+// re-mints its short-lived Clerk JWT this way — so this needs real headroom
+// beyond what send-otp/verify-otp abuse-prevention alone would want.
 const authRateLimit = rateLimit({
   windowMs: 15 * 60_000,
-  limit: 30,
+  limit: 300,
   standardHeaders: true,
   legacyHeaders: false,
 });
