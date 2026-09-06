@@ -2,7 +2,6 @@ import type { Request, Response } from 'express';
 import type { OtpPurpose } from '@prisma/client';
 import { otpRepository } from '../repositories/otp.repository.js';
 import { userRepository } from '../repositories/user.repository.js';
-import { msg91Service } from '../services/msg91.service.js';
 import { clerkAuthService } from '../services/clerk-auth.service.js';
 import { sendOtpSchema, verifyOtpSchema, refreshSchema } from '../validation/auth.schemas.js';
 import { HttpError } from '../middleware/error-handler.js';
@@ -39,15 +38,11 @@ export async function sendOtp(req: Request, res: Response) {
     }
   }
 
-  const result = await msg91Service.sendOtp(phoneNumber);
-  if (!result.ok) {
-    throw new HttpError(502, result.message);
-  }
+  // No SMS provider is wired up — every send is a mock. The client is told
+  // this explicitly (mock: true) rather than pretending a text went out.
+  await otpRepository.create({ phoneNumber, purpose });
 
-  await otpRepository.create({ phoneNumber, purpose, msg91RequestId: result.requestId });
-
-  // Honest about mode: the client must never assume a real SMS went out.
-  res.status(200).json({ purpose, mock: !msg91Service.isConfigured });
+  res.status(200).json({ purpose, mock: true });
 }
 
 export async function verifyOtp(req: Request, res: Response) {
@@ -62,14 +57,15 @@ export async function verifyOtp(req: Request, res: Response) {
     throw new HttpError(429, 'Too many incorrect attempts. Request a new OTP.');
   }
 
-  const result = await msg91Service.verifyOtp(phoneNumber, code);
-  if (!result.ok) {
+  // No SMS provider is wired up, so there's no real code to check against —
+  // "000000" is the one accepted mock value, same as the client is told.
+  if (code !== '000000') {
     await otpRepository.incrementAttempts(activeOtp.id);
-    throw new HttpError(401, result.message);
+    throw new HttpError(401, 'Mock OTP mismatch (use 000000)');
   }
 
-  // Consumed only after every downstream step below succeeds — MSG91 (or the
-  // mock) has already confirmed the code is correct at this point, but if
+  // Consumed only after every downstream step below succeeds — the mock has
+  // already confirmed the code is correct at this point, but if
   // Clerk/DB provisioning fails transiently we want the same code to still
   // be usable on retry rather than forcing the user to request a new SMS.
   let user = await userRepository.findByPhoneNumber(phoneNumber);

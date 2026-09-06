@@ -12,11 +12,6 @@ const envSchema = z.object({
   CLERK_SECRET_KEY: z.string().min(1, 'CLERK_SECRET_KEY is required'),
   CLERK_PUBLISHABLE_KEY: z.string().min(1, 'CLERK_PUBLISHABLE_KEY is required'),
 
-  // Optional: absent => MSG91 service runs in mock mode.
-  MSG91_AUTH_KEY: z.string().optional().default(''),
-  MSG91_SENDER_ID: z.string().optional().default(''),
-  MSG91_OTP_TEMPLATE_ID: z.string().optional().default(''),
-
   // Admin-provisioned Sarvam AI key. Lives only here — the app never sees
   // it, so it can't be extracted from the client or its network traffic.
   SARVAM_API_KEY: z.string().min(1, 'SARVAM_API_KEY is required'),
@@ -33,7 +28,3 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
-
-export const isMsg91Configured = Boolean(
-  env.MSG91_AUTH_KEY && env.MSG91_SENDER_ID && env.MSG91_OTP_TEMPLATE_ID,
-);
