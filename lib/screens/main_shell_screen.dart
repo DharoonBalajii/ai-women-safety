@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../providers/emergency_provider.dart';
+import '../services/app_settings_service.dart';
 import '../theme/home_theme.dart';
 import 'contacts_screen.dart';
+import 'emergency_active_screen.dart';
 import 'history_screen.dart';
 import 'home_screen.dart';
 import 'settings_screen.dart';
@@ -17,6 +21,30 @@ class MainShellScreen extends StatefulWidget {
 
 class _MainShellScreenState extends State<MainShellScreen> {
   int _index = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeAutoTriggerSos());
+  }
+
+  /// Runs once, right after this screen first appears — i.e. once per app
+  /// launch (or sign-in), not on every tab switch, since [MainShellScreen]
+  /// itself isn't recreated after that. Only fires if the toggle in
+  /// Personal Details is on and there isn't already a live incident (e.g.
+  /// the app was killed mid-emergency and just reopened into it).
+  Future<void> _maybeAutoTriggerSos() async {
+    final shouldAutoTrigger = await appSettingsService.getAutoTriggerOnLaunch();
+    if (!shouldAutoTrigger || !mounted) return;
+
+    final emergency = context.read<EmergencyProvider>();
+    if (!emergency.hasActiveIncident) {
+      await emergency.triggerVoiceSOS();
+    }
+    if (mounted) {
+      Navigator.of(context).push(MaterialPageRoute(builder: (_) => const EmergencyActiveScreen()));
+    }
+  }
 
   static const _screens = [
     HomeScreen(),

@@ -3,13 +3,39 @@ import 'package:provider/provider.dart';
 
 import '../models/user_role.dart';
 import '../providers/auth_provider.dart';
+import '../services/app_settings_service.dart';
 import '../theme/home_theme.dart';
 
 /// Personal Details: the signed-in person's own account info and sign-out
 /// — nothing about AI configuration here anymore. The Sarvam key is an
 /// admin-provisioned backend secret now; the app never holds or shows one.
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _autoTriggerOnLaunch = false;
+  bool _loadedAutoTrigger = false;
+
+  @override
+  void initState() {
+    super.initState();
+    appSettingsService.getAutoTriggerOnLaunch().then((value) {
+      if (!mounted) return;
+      setState(() {
+        _autoTriggerOnLaunch = value;
+        _loadedAutoTrigger = true;
+      });
+    });
+  }
+
+  Future<void> _setAutoTrigger(bool value) async {
+    setState(() => _autoTriggerOnLaunch = value);
+    await appSettingsService.setAutoTriggerOnLaunch(value);
+  }
 
   Future<void> _confirmSignOut(BuildContext context) async {
     final confirmed = await showDialog<bool>(
@@ -99,6 +125,49 @@ class SettingsScreen extends StatelessWidget {
               child: const Text('Sign out'),
             ),
           ),
+          if (user?.role == UserRole.protected) ...[
+            const SizedBox(height: 24),
+            Text('SAFETY', style: HomeText.eyebrow()),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: HomeColors.cardBorder),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 20, offset: const Offset(0, 4)),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Auto-trigger SOS on launch', style: HomeText.cardTitle()),
+                        const SizedBox(height: 4),
+                        Text(
+                          _autoTriggerOnLaunch
+                              ? 'Opening the app immediately starts an emergency — no button press needed.'
+                              : 'Off: opening the app goes to your normal Home screen. Use the SOS button to '
+                                  'start an emergency manually.',
+                          style: HomeText.caption(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Switch(
+                    value: _autoTriggerOnLaunch,
+                    activeThumbColor: HomeColors.sosCrimson,
+                    onChanged: _loadedAutoTrigger ? _setAutoTrigger : null,
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 24),
           Text('ABOUT', style: HomeText.eyebrow()),
           const SizedBox(height: 10),
