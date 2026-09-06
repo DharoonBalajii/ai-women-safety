@@ -1,0 +1,133 @@
+// Raksha Thunai backend data model.
+// Postgres (Supabase). Clerk remains the source of truth for identity/session —
+// this schema stores only app-specific data, keyed off the Clerk user id.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PROTECTED
+  GUARDIAN
+}
+
+enum RelationshipStatus {
+  PENDING  // protected user invited a guardian; not yet authorized
+  ACTIVE   // protected user has explicitly authorized this guardian
+  REVOKED  // protected user revoked a previously-active authorization
+}
+
+enum OtpPurpose {
+  SIGN_UP
+  SIGN_IN
+}
+
+/// One row per authenticated identity. Created only after MSG91 verifies the
+/// phone number and the backend mints/attaches the matching Clerk user.
+model User {
+  id            String    @id @default(uuid())
+  clerkUserId   String    @unique
+  phoneNumber   String    @unique
+  role          UserRole
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  protectedProfile ProtectedProfile?
+  guardianProfile  GuardianProfile?
+
+  auditEvents   AuditEvent[]
+
+  @@index([role])
+}
+
+model ProtectedProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  emergencyContacts    EmergencyContact[]
+  guardianRelationships GuardianRelationship[] @relation("ProtectedUserRelationships")
+}
+
+model GuardianProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  displayName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  relationships GuardianRelationship[] @relation("GuardianRelationships")
+}
+
+/// Explicit, per-pair authorization. A Guardian only ever sees a Protected
+/// User's data or alerts when a row here exists with status ACTIVE — never
+/// derived from a guardian merely knowing/submitting a phone number.
+model GuardianRelationship {
+  id               String             @id @default(uuid())
+  protectedUserId  String
+  protectedUser    ProtectedProfile   @relation("ProtectedUserRelationships", fields: [protectedUserId], references: [id], onDelete: Cascade)
+  guardianId       String
+  guardian         GuardianProfile    @relation("GuardianRelationships", fields: [guardianId], references: [id], onDelete: Cascade)
+  status           RelationshipStatus @default(PENDING)
+  label            String?            // e.g. "Mother", "Spouse" — set by the protected user
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  @@unique([protectedUserId, guardianId])
+  @@index([guardianId, status])
+}
+
+/// Contacts a Protected User wants alerted who may or may not be app users.
+model EmergencyContact {
+  id                String           @id @default(uuid())
+  protectedUserId   String
+  protectedUser     ProtectedProfile @relation(fields: [protectedUserId], references: [id], onDelete: Cascade)
+  name              String
+  phoneNumber       String
+  relationship      String?
+  createdAt         DateTime         @default(now())
+
+  @@index([protectedUserId])
+}
+
+/// Server-side OTP request state for the MSG91 flow. MSG91 itself generates,
+/// sends, and verifies the code — this row never stores the code. It exists
+/// for rate-limiting (how many requests/attempts for this phone recently),
+/// expiry bookkeeping, and audit, so a DB read alone can never leak a valid OTP.
+model OtpVerification {
+  id             String     @id @default(uuid())
+  phoneNumber    String
+  purpose        OtpPurpose
+  msg91RequestId String?
+  attempts       Int        @default(0)
+  maxAttempts    Int        @default(5)
+  consumedAt     DateTime?
+  expiresAt      DateTime
+  createdAt      DateTime   @default(now())
+
+  @@index([phoneNumber, purpose, createdAt])
+}
+
+/// Append-only security/audit log. Never write OTP codes, tokens, or secrets
+/// into `metadata`.
+model AuditEvent {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  eventType String
+  metadata  Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([eventType, createdAt])
+}
