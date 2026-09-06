@@ -15,8 +15,10 @@ import '../models/trusted_contact.dart';
 import '../models/voice_analysis_result.dart';
 import '../services/ai_analysis_service.dart';
 import '../services/alert_service.dart';
+import '../services/battery_service.dart';
 import '../services/contacts_store.dart';
 import '../services/incident_store.dart';
+import '../services/incident_sync_service.dart';
 import '../services/location_service.dart';
 import '../services/safe_zone_service.dart';
 import '../services/voice_capture_service.dart';
@@ -37,6 +39,12 @@ class EmergencyProvider extends ChangeNotifier {
   final _uuid = const Uuid();
 
   EmergencyIncident? _activeIncident;
+
+  /// This incident's id on the backend, once (and if) it's been reported
+  /// there — null until that push succeeds, so every sync call below is a
+  /// no-op rather than an error when the backend was unreachable at start.
+  /// A guardian only ever sees this incident once this exists.
+  String? _backendIncidentId;
   List<SafePlace> _safePlaces = [];
   bool _isRecordingVoice = false;
   bool _isAnalyzingVoice = false;
@@ -107,18 +115,50 @@ class EmergencyProvider extends ChangeNotifier {
       locationTrail: location != null ? [location] : [],
     );
     _activeIncident = incident;
+    _backendIncidentId = null;
     _latestAmbientAssessment = null;
     _watchLocation();
     unawaited(refreshSafePlaces());
+    unawaited(_reportToBackend(incident, location));
     startAmbientMonitoring();
     notifyListeners();
     return incident;
+  }
+
+  Future<void> _reportToBackend(EmergencyIncident incident, LocationPoint? location) async {
+    final battery = await batteryService.currentLevel();
+    final id = await incidentSyncService.reportIncident(
+      threatType: incident.threatType.name,
+      aiSummary: incident.aiSummary,
+      latitude: location?.latitude,
+      longitude: location?.longitude,
+      batteryPercent: battery,
+    );
+    // The incident may have moved on (resolved, or a new one started) by
+    // the time this network call returns — only attach the id if it's
+    // still the same live incident.
+    if (_activeIncident?.id == incident.id) {
+      _backendIncidentId = id;
+    }
   }
 
   void _watchLocation() {
     _locationSub?.cancel();
     _locationSub = _locationService.watchLocation().listen((point) {
       _activeIncident?.locationTrail.add(point);
+      final incidentId = _backendIncidentId;
+      if (incidentId != null) {
+        unawaited(
+          batteryService.currentLevel().then(
+                (battery) => incidentSyncService.updateLocation(
+                  incidentId,
+                  latitude: point.latitude,
+                  longitude: point.longitude,
+                  batteryPercent: battery,
+                ),
+              ),
+        );
+      }
       notifyListeners();
     });
   }
@@ -192,6 +232,14 @@ class EmergencyProvider extends ChangeNotifier {
     if (result.analyzed && result.threatType != null) {
       incident.threatType = result.threatType!;
       incident.aiSummary = result.summary;
+      final incidentId = _backendIncidentId;
+      if (incidentId != null) {
+        unawaited(incidentSyncService.updateSummary(
+          incidentId,
+          threatType: incident.threatType.name,
+          aiSummary: incident.aiSummary,
+        ));
+      }
     }
     incident.updates.add(IncidentUpdate(
       id: _uuid.v4(),
@@ -405,6 +453,14 @@ class EmergencyProvider extends ChangeNotifier {
     _pendingCheckIn = null;
     _checkInSecondsRemaining = 0;
     stopAmbientMonitoring();
+    final incidentId = _backendIncidentId;
+    if (incidentId != null) {
+      unawaited(incidentSyncService.updateStatus(
+        incidentId,
+        resolved: incident.status == IncidentStatus.resolved,
+      ));
+    }
+    _backendIncidentId = null;
     await _incidentStore.upsert(incident);
     _activeIncident = null;
     await loadHistory();

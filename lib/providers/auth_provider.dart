@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../models/app_user.dart';
 import '../models/user_role.dart';
+import '../services/api_client.dart';
 import '../services/auth_service.dart';
 
 enum AuthStatus { checking, signedOut, signedIn }
@@ -20,10 +21,12 @@ class AuthProvider extends ChangeNotifier {
     final result = await authService.restoreSession();
     if (result == null) {
       _status = AuthStatus.signedOut;
+      ApiSession.clear();
     } else {
       _user = result.user;
       _jwt = result.jwt;
       _status = AuthStatus.signedIn;
+      ApiSession.update(jwt: result.jwt, sessionId: result.sessionId);
     }
     notifyListeners();
   }
@@ -37,6 +40,20 @@ class AuthProvider extends ChangeNotifier {
     _user = result.user;
     _jwt = result.jwt;
     _status = AuthStatus.signedIn;
+    ApiSession.update(jwt: result.jwt, sessionId: result.sessionId);
+    notifyListeners();
+  }
+
+  /// Demo-only bypass: enters the app as a local, backend-less session so
+  /// the app can be shown without depending on the auth backend being up.
+  /// No ApiSession jwt/sessionId is set, so every authenticated backend
+  /// call (guardian linking, incident sync) just fails silently/best-effort
+  /// exactly as it already does when the server is unreachable — nothing
+  /// else in the app assumes a real session exists.
+  void skipSignIn(UserRole role) {
+    _user = AppUser(id: 'demo-user', phoneNumber: 'Demo mode', role: role);
+    _jwt = null;
+    _status = AuthStatus.signedIn;
     notifyListeners();
   }
 
@@ -45,6 +62,7 @@ class AuthProvider extends ChangeNotifier {
     _user = null;
     _jwt = null;
     _status = AuthStatus.signedOut;
+    ApiSession.clear();
     notifyListeners();
   }
 }

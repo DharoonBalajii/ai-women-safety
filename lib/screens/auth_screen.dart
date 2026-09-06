@@ -125,6 +125,11 @@ class _AuthScreenState extends State<AuthScreen> {
                   const SizedBox(height: 14),
                   Text(_error!, style: HomeText.body(color: HomeColors.sosCrimson), textAlign: TextAlign.center),
                 ],
+                const SizedBox(height: 18),
+                TextButton(
+                  onPressed: () => context.read<AuthProvider>().skipSignIn(_role),
+                  child: Text('Skip for demo', style: HomeText.body(color: HomeColors.textSecondary)),
+                ),
               ],
             ),
           ),

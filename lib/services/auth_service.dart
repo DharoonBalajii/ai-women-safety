@@ -19,6 +19,23 @@ class VerifyOtpResult {
   const VerifyOtpResult({required this.sessionId, required this.jwt, required this.user});
 }
 
+enum _RefreshOutcome { success, revoked, unreachable }
+
+/// Distinguishes "this session no longer exists" (the server said so
+/// definitively — sign the person out) from "couldn't tell right now" (a
+/// timeout, a 5xx, no network — assume the session is still fine and let
+/// the next real request surface anything genuinely wrong). Conflating
+/// these left a revoked session looking permanently "signed in" while every
+/// API call quietly 401'd forever.
+class _RefreshResult {
+  final _RefreshOutcome outcome;
+  final String? jwt;
+  const _RefreshResult._(this.outcome, this.jwt);
+  const _RefreshResult.success(String jwt) : this._(_RefreshOutcome.success, jwt);
+  const _RefreshResult.revoked() : this._(_RefreshOutcome.revoked, null);
+  const _RefreshResult.unreachable() : this._(_RefreshOutcome.unreachable, null);
+}
+
 /// Thin client for this app's own backend `/auth/*` routes — the phone/OTP
 /// sign-in flow backed by MSG91 + Clerk on the server. The session (a
 /// Clerk sign-in-token-derived id, functioning like a refresh token) is
@@ -89,20 +106,47 @@ class AuthService {
         // person is signed out of this device even if the request failed.
       }
     }
-    await _storage.delete(key: _sessionIdKey);
-    await _storage.delete(key: _jwtKey);
-    await _storage.delete(key: _userKey);
+    await _clearStorage();
   }
 
   /// Loads a persisted session and confirms it's still valid by refreshing
-  /// its JWT. Returns null if there's no session, or it's been revoked/
-  /// expired — the caller (AuthProvider) treats that as signed-out rather
-  /// than guessing the session is still good.
+  /// its JWT. Returns null if there's no stored session, or the server has
+  /// definitively revoked/expired it — the caller (AuthProvider) treats
+  /// that as signed-out. A merely unreachable server does NOT sign the
+  /// person out; it keeps the stale session and lets the next real API
+  /// call surface anything actually wrong.
   Future<VerifyOtpResult?> restoreSession() async {
     final sessionId = await _storage.read(key: _sessionIdKey);
     final userJson = await _storage.read(key: _userKey);
     if (sessionId == null || userJson == null) return null;
 
+    final result = await _refresh(sessionId);
+    final user = AppUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+
+    switch (result.outcome) {
+      case _RefreshOutcome.success:
+        return VerifyOtpResult(sessionId: sessionId, jwt: result.jwt!, user: user);
+      case _RefreshOutcome.revoked:
+        await _clearStorage();
+        return null;
+      case _RefreshOutcome.unreachable:
+        final staleJwt = await _storage.read(key: _jwtKey) ?? '';
+        return VerifyOtpResult(sessionId: sessionId, jwt: staleJwt, user: user);
+    }
+  }
+
+  /// Mints a fresh JWT for an existing session — Clerk's session tokens are
+  /// short-lived by design, so any long-running screen (e.g. the guardian
+  /// dashboard's polling loop) must call this periodically rather than
+  /// reusing the token from sign-in. Returns null on any failure (revoked
+  /// or unreachable) so callers can fall back gracefully; callers that need
+  /// to tell those apart (i.e. [restoreSession]) use [_refresh] directly.
+  Future<String?> refreshJwt(String sessionId) async {
+    final result = await _refresh(sessionId);
+    return result.jwt;
+  }
+
+  Future<_RefreshResult> _refresh(String sessionId) async {
     try {
       final response = await http
           .post(
@@ -111,20 +155,27 @@ class AuthService {
             body: jsonEncode({'sessionId': sessionId}),
           )
           .timeout(const Duration(seconds: 15));
-      if (response.statusCode != 200) return null;
 
-      final jwt = (jsonDecode(response.body) as Map<String, dynamic>)['jwt'] as String;
-      final user = AppUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
-      await _storage.write(key: _jwtKey, value: jwt);
-      return VerifyOtpResult(sessionId: sessionId, jwt: jwt, user: user);
+      if (response.statusCode == 200) {
+        final jwt = (jsonDecode(response.body) as Map<String, dynamic>)['jwt'] as String;
+        await _storage.write(key: _jwtKey, value: jwt);
+        return _RefreshResult.success(jwt);
+      }
+      if (response.statusCode == 401) {
+        return const _RefreshResult.revoked();
+      }
+      // An unexpected server error (5xx, rate-limited, etc.) says nothing
+      // definitive about the session itself.
+      return const _RefreshResult.unreachable();
     } catch (_) {
-      // Network/server unreachable at startup — don't sign the person out
-      // over a connectivity blip; treat the stored session as still valid
-      // and let the next real API call surface any actual auth failure.
-      final user = AppUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
-      final jwt = await _storage.read(key: _jwtKey) ?? '';
-      return VerifyOtpResult(sessionId: sessionId, jwt: jwt, user: user);
+      return const _RefreshResult.unreachable();
     }
+  }
+
+  Future<void> _clearStorage() async {
+    await _storage.delete(key: _sessionIdKey);
+    await _storage.delete(key: _jwtKey);
+    await _storage.delete(key: _userKey);
   }
 
   Future<void> _persistSession(VerifyOtpResult result) async {
