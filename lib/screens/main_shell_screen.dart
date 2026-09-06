@@ -7,11 +7,7 @@ import 'home_screen.dart';
 import 'settings_screen.dart';
 
 /// Persistent four-tab shell around the "personal companion" surfaces.
-/// Each tab keeps its own screen/state alive via [IndexedStack] — Activity
-/// and Safety Circle currently reuse the existing History/Contacts screens
-/// unchanged, so those still read in the app's dark "instrument panel"
-/// styling rather than the light Home theme; that's a known follow-up, not
-/// an oversight.
+/// Each tab keeps its own screen/state alive via [IndexedStack].
 class MainShellScreen extends StatefulWidget {
   const MainShellScreen({super.key});
 
@@ -33,7 +29,7 @@ class _MainShellScreenState extends State<MainShellScreen> {
     _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
     _NavItem(icon: Icons.assignment_outlined, activeIcon: Icons.assignment_rounded, label: 'Activity'),
     _NavItem(icon: Icons.group_outlined, activeIcon: Icons.group_rounded, label: 'Safety Circle'),
-    _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Profile'),
+    _NavItem(icon: Icons.person_outline_rounded, activeIcon: Icons.person_rounded, label: 'Personal Details'),
   ];
 
   @override
@@ -50,13 +46,14 @@ class _MainShellScreenState extends State<MainShellScreen> {
           child: SizedBox(
             height: 64,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 for (var i = 0; i < _items.length; i++)
-                  _NavButton(
-                    item: _items[i],
-                    active: i == _index,
-                    onTap: () => setState(() => _index = i),
+                  Expanded(
+                    child: _NavButton(
+                      item: _items[i],
+                      active: i == _index,
+                      onTap: () => setState(() => _index = i),
+                    ),
                   ),
               ],
             ),
@@ -85,7 +82,6 @@ class _NavButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: SizedBox(
-        width: 76,
         height: 64,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
